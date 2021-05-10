@@ -1,0 +1,13 @@
+site_name: MkRefs
+site_description: Test MkRefs Plugin
+site_url: https://github.com/DerwenAI/kglab
+
+biblio_graph: biblio.ttl
+biblio_page: biblio.md
+
+nav:
+    - Home: index.md
+    - Other: other.md
+
+plugins:
+  - mkrefs
