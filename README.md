@@ -1,35 +1,41 @@
-# mkdocs-plugin-template
+# mkrefs
 
-This is a template for a MkDocs plugin.
+MkDocs plugin to generate reference Markdown pages from a knowledge
+graph, leveraging
+[`kglab`](https://github.com/DerwenAI/kglab).
+
+This plugin code is based on the marvelous examples in
+<https://github.com/byrnereese/mkdocs-plugin-template>
+with kudos to [@byrnereese](https://github.com/byrnereese/)
+
 
 ## Setup
 
-Install the plugin using pip:
+To install the plugin using pip:
 
-`pip install mkdocs-your-plugin-name`
-
-Activate the plugin in `mkdocs.yml`:
-```yaml
-plugins:
-  - search
-  - your-plugin-name
+```
+pip install mkrefs
 ```
 
-> **Note:** If you have no `plugins` entry in your config file yet, you'll likely also want to add the `search` plugin. MkDocs enables it by default if there is no `plugins` entry set, but now you have to enable it explicitly.
+Then activate the plugin in `mkdocs.yml`:
+```yaml
+plugins:
+  - mkrefs
+```
 
-More information about plugins in the [MkDocs documentation][mkdocs-plugins].
 
-## Config
+## Configuration
 
-* `param` - This does something
+The following parameters are expected:
+
+* `biblio_graph` - RDF source file for the knowledge graph, in TTL format; defaults to `biblio.ttl`
+* `biblio_page` - target Markdown page; defaults to `biblio.md`
+
 
 ## Usage
 
+
 ## See Also
-
-More information about templates [here][mkdocs-template].
-
-More information about blocks [here][mkdocs-block].
 
 [mkdocs-plugins]: http://www.mkdocs.org/user-guide/plugins/
 [mkdocs-template]: https://www.mkdocs.org/user-guide/custom-themes/#template-variables
