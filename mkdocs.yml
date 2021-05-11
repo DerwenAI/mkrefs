@@ -1,6 +1,6 @@
 site_name: MkRefs
-site_description: Test MkRefs Plugin
-site_url: https://github.com/DerwenAI/kglab
+site_description: MkRefs Plugin – semantic references for research tools
+site_url: https://github.com/DerwenAI/mkrefs
 
 biblio_graph: biblio.ttl
 biblio_page: biblio.md
@@ -8,6 +8,7 @@ biblio_page: biblio.md
 nav:
     - Home: index.md
     - Other: other.md
+    - Biblio: biblio.md
 
 plugins:
   - mkrefs
