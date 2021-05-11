@@ -5,13 +5,12 @@ import sys ; sys.path.insert(0, "../kglab/")
 import kglab
 
 from pprint import pprint
+import jinja2  # pylint: disable=E0401
+import json
 import mkdocs.config
 import mkdocs.plugins
 import mkdocs.structure.files
 import pathlib
-
-import jinja2  # pylint: disable=E0401
-import json
 import tempfile
 import typing
 
@@ -19,8 +18,9 @@ import typing
 class MkRefsPlugin (mkdocs.plugins.BasePlugin):
 
     config_scheme = (
-        ("biblio_graph", mkdocs.config.config_options.Type(str, default="biblio.ttl")),
-        ("biblio_page", mkdocs.config.config_options.Type(str, default="biblio.md")),
+        ("mkrefs_bib_page", mkdocs.config.config_options.Type(str, default="biblio.md")),
+        ("mkrefs_bib_graph", mkdocs.config.config_options.Type(str, default="biblio.ttl")),
+        ("mkrefs_bib_template", mkdocs.config.config_options.Type(str, default="biblio.template")),
     )
 
     def __init__ (self):
@@ -35,8 +35,8 @@ class MkRefsPlugin (mkdocs.plugins.BasePlugin):
         print("on_config")
         pprint(config)
 
-        if self.config["biblio_graph"]:
-            biblio_path = pathlib.Path(config["docs_dir"]) / self.config["biblio_graph"]
+        if self.config["mkrefs_bib_graph"]:
+            biblio_path = pathlib.Path(config["docs_dir"]) / self.config["mkrefs_bib_graph"]
             self.biblio_kg = kglab.KnowledgeGraph()
             self.biblio_kg.load_rdf(biblio_path, format="ttl")
 
@@ -53,7 +53,7 @@ class MkRefsPlugin (mkdocs.plugins.BasePlugin):
             print(file.src_path, file.dest_path)
 
         self.biblio_file = mkdocs.structure.files.File(
-            path = config["biblio_page"],
+            path = config["mkrefs_bib_page"],
             src_dir = config["docs_dir"],
             dest_dir = config["site_dir"],
             use_directory_urls = config["use_directory_urls"],
@@ -65,7 +65,7 @@ class MkRefsPlugin (mkdocs.plugins.BasePlugin):
         biblio_path = pathlib.Path(config["docs_dir"]) / self.biblio_file.src_path
 
         with open(biblio_path, "w") as f:
-            template = get_jinja2_template("biblio.template", config["docs_dir"])
+            template = get_jinja2_template(config["mkrefs_bib_template"], config["docs_dir"])
             f.write(template.render(groups=groups))
 
         return files
@@ -75,8 +75,8 @@ class MkRefsPlugin (mkdocs.plugins.BasePlugin):
         print("on_page_read_source")
         #pprint(vars(page.file))
 
-        if page.file.abs_src_path == config["biblio_page"]:
-            print("FOUND!", config["biblio_page"])
+        if page.file.abs_src_path == config["mkrefs_bib_page"]:
+            print("FOUND!", config["mkrefs_bib_page"])
 
         return None
 
