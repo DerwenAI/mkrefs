@@ -8,8 +8,6 @@ import tempfile
 import typing
 
 import jinja2  # pylint: disable=E0401
-
-import sys ; sys.path.insert(0, "../kglab/")
 import kglab
 
 
@@ -52,11 +50,14 @@ specified list.
     return any(map(lambda k: item["@type"].endswith(k), kind_list))  # pylint: disable=W0108
 
 
-def transform_to_groups (
+def denorm_biblio_groups (
     kg: kglab.KnowledgeGraph,  # pylint: disable=W0621
     ) -> typing.Dict[str, list]:
     """
-Transform a KG into groups of entries that can be rendered
+Denormalize a KG into groups of bibliographic entries so that they can
+be rendered as Markdown.
+
+TODO: use queries to filter/segment the needed entities from the KG
     """
     # serialize as JSON-LD
     json_path = pathlib.Path(tempfile.NamedTemporaryFile().name)

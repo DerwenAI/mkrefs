@@ -9,9 +9,8 @@ import mkdocs.config
 import mkdocs.plugins
 import mkdocs.structure.files
 
-import sys ; sys.path.insert(0, "../kglab/")
 import kglab
-from .biblio import get_jinja2_template, transform_to_groups
+from .biblio import get_jinja2_template, denorm_biblio_groups
 
 
 class MkRefsPlugin (mkdocs.plugins.BasePlugin):
@@ -51,7 +50,7 @@ class MkRefsPlugin (mkdocs.plugins.BasePlugin):
 
         files.append(self.biblio_file)
 
-        groups = transform_to_groups(self.biblio_kg)
+        groups = denorm_biblio_groups(self.biblio_kg)
         biblio_path = pathlib.Path(config["docs_dir"]) / self.biblio_file.src_path
 
         with open(biblio_path, "w") as f:
@@ -67,11 +66,6 @@ class MkRefsPlugin (mkdocs.plugins.BasePlugin):
     def on_pre_build (self, config, **kwargs):
         #print("on_pre_build")
         return
-
-    def on_page_read_source (self, page, config, **kwargs):
-        #print("on_page_read_source")
-        #pprint(vars(page.file))
-        return None
 
     def on_env (self, env, config, files, **kwargs):
         #print("on_env")
@@ -92,6 +86,9 @@ class MkRefsPlugin (mkdocs.plugins.BasePlugin):
 
     def on_pre_page (self, page, config, files, **kwargs):
         return page
+
+    def on_page_read_source (self, page, config, **kwargs):
+        return None
 
     def on_page_markdown (self, markdown, page, config, files, **kwargs):
         return markdown
