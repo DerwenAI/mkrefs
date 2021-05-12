@@ -9,7 +9,7 @@ import mkdocs.config
 import mkdocs.plugins
 import mkdocs.structure.files
 
-from .biblio import load_kg, get_jinja2_template, render_biblio
+from .biblio import load_kg, render_biblio
 
 
 class MkRefsPlugin (mkdocs.plugins.BasePlugin):
@@ -48,9 +48,9 @@ class MkRefsPlugin (mkdocs.plugins.BasePlugin):
 
         files.append(self.biblio_file)
 
-        template = get_jinja2_template(config["mkrefs_bib_template"], config["docs_dir"])
-        biblio_md_path = pathlib.Path(config["docs_dir"]) / self.biblio_file.src_path
-        render_biblio(self.biblio_kg, template, biblio_md_path)
+        template_path = pathlib.Path(config["docs_dir"]) / config["mkrefs_bib_template"]
+        markdown_path = pathlib.Path(config["docs_dir"]) / self.biblio_file.src_path
+        render_biblio(self.biblio_kg, template_path, markdown_path)
 
         return files
 

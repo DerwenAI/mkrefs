@@ -191,22 +191,25 @@ TODO: use queries to filter/segment the needed entities from the KG
 
 def render_biblio (
     kg: kglab.KnowledgeGraph,
-    template: jinja2.Template,
-    path: pathlib.Path,
+    template_path: pathlib.Path,
+    markdown_path: pathlib.Path,
     ) -> None:
     """
-Render the Markdown for a bibliography, based on the given KG and Jinja2 template.
+Render the Markdown for a bibliography, based on the given KG and
+Jinja2 template.
 
     kg:
 KG containing the bibliography entities
 
-    template:
-Jinja2 template for rendering a bibliography page in MkDocs
+    template_path:
+file path for Jinja2 template for rendering a bibliography page in MkDocs
 
-    path:
+    markdown_path:
 file path for the rendered Markdown file
     """
+    template_file = str(template_path.relative_to(template_path.parent))
+    template = get_jinja2_template(template_file, str(template_path.parent))
     groups = denorm_biblio_groups(kg)
 
-    with open(path, "w") as f:
+    with open(markdown_path, "w") as f:
         f.write(template.render(groups=groups))
