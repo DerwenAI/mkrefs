@@ -11,6 +11,24 @@ import jinja2  # pylint: disable=E0401
 import kglab
 
 
+def load_kg (
+    path: pathlib.Path,
+    ) -> kglab.KnowledgeGraph:
+    """
+Load a KG from an RDF file in "Turtle" (TTL) format.
+
+    path:
+path to the RDF file
+
+    returns:
+populated KG
+    """
+    kg = kglab.KnowledgeGraph()
+    kg.load_rdf(path, format="ttl")
+
+    return kg
+
+
 def get_jinja2_template (
     template_file: str,
     dir: str,
@@ -169,3 +187,26 @@ TODO: use queries to filter/segment the needed entities from the KG
         groups[letter].append(trans)
 
     return groups
+
+
+def render_biblio (
+    kg: kglab.KnowledgeGraph,
+    template: jinja2.Template,
+    path: pathlib.Path,
+    ) -> None:
+    """
+Render the Markdown for a bibliography, based on the given KG and Jinja2 template.
+
+    kg:
+KG containing the bibliography entities
+
+    template:
+Jinja2 template for rendering a bibliography page in MkDocs
+
+    path:
+file path for the rendered Markdown file
+    """
+    groups = denorm_biblio_groups(kg)
+
+    with open(path, "w") as f:
+        f.write(template.render(groups=groups))

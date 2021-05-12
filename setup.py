@@ -32,9 +32,13 @@ setuptools.setup(
 
     entry_points = {
         "mkdocs.plugins": [
-            "mkrefs = mkrefs.plugin:MkRefsPlugin"
-        ]
-    },
+            "mkrefs = mkrefs.plugin:MkRefsPlugin",
+            ],
+
+        "console_scripts": [
+            "mkrefs = mkrefs.cli:cli",
+            ],
+        },
 
     classifiers = [
         "Development Status :: 4 - Beta",

@@ -28,11 +28,16 @@ plugins:
 
 The following parameters are expected:
 
-* `biblio_graph` - RDF source file for the knowledge graph, in TTL format; defaults to `biblio.ttl`
-* `biblio_page` - target Markdown page; defaults to `biblio.md`
+* `mkrefs_bib_graph` - RDF source file for the knowledge graph, in TTL format; defaults to `biblio.ttl`
+* `mkrefs_bib_template` - Jinja2 template for rendering a bibliography page; defaults to `biblio.template`
+* `mkrefs_bib_page` - target Markdown page; defaults to `biblio.md`
 
 
 ## Usage
+
+```
+mkrefs biblio docs/biblio.ttl docs/biblio.template docs/biblio.md
+```
 
 
 ## See Also

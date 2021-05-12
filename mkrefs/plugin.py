@@ -9,8 +9,7 @@ import mkdocs.config
 import mkdocs.plugins
 import mkdocs.structure.files
 
-import kglab
-from .biblio import get_jinja2_template, denorm_biblio_groups
+from .biblio import load_kg, get_jinja2_template, render_biblio
 
 
 class MkRefsPlugin (mkdocs.plugins.BasePlugin):
@@ -33,9 +32,8 @@ class MkRefsPlugin (mkdocs.plugins.BasePlugin):
         #pprint(config)
 
         if self.config["mkrefs_bib_graph"]:
-            biblio_path = pathlib.Path(config["docs_dir"]) / self.config["mkrefs_bib_graph"]
-            self.biblio_kg = kglab.KnowledgeGraph()
-            self.biblio_kg.load_rdf(biblio_path, format="ttl")
+            biblio_ttl_path = pathlib.Path(config["docs_dir"]) / self.config["mkrefs_bib_graph"]
+            self.biblio_kg = load_kg(biblio_ttl_path)
 
         return config
 
@@ -50,12 +48,9 @@ class MkRefsPlugin (mkdocs.plugins.BasePlugin):
 
         files.append(self.biblio_file)
 
-        groups = denorm_biblio_groups(self.biblio_kg)
-        biblio_path = pathlib.Path(config["docs_dir"]) / self.biblio_file.src_path
-
-        with open(biblio_path, "w") as f:
-            template = get_jinja2_template(config["mkrefs_bib_template"], config["docs_dir"])
-            f.write(template.render(groups=groups))
+        template = get_jinja2_template(config["mkrefs_bib_template"], config["docs_dir"])
+        biblio_md_path = pathlib.Path(config["docs_dir"]) / self.biblio_file.src_path
+        render_biblio(self.biblio_kg, template, biblio_md_path)
 
         return files
 
