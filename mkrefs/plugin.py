@@ -19,6 +19,7 @@ import mkdocs.structure.nav
 import mkdocs.structure.pages
 
 import jinja2  # pylint: disable=E0401
+import livereload
 
 from .biblio import load_kg, render_biblio
 
@@ -292,9 +293,9 @@ https://www.mkdocs.org/user-guide/plugins/#on_post_build
 
     def on_serve (
         self,
-        server,
+        server: livereload.Server,
         **kwargs: typing.Any,
-        ):
+        ) -> livereload.Server:
         """
 https://www.mkdocs.org/user-guide/plugins/#on_serve
         """
