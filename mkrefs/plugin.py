@@ -15,7 +15,10 @@ import typing
 from mkdocs.config import config_options
 import mkdocs.plugins
 import mkdocs.structure.files
-import mkdocs.structure.nav 
+import mkdocs.structure.nav
+import mkdocs.structure.pages
+
+import jinja2  # pylint: disable=E0401
 
 from .biblio import load_kg, render_biblio
 
@@ -95,88 +98,114 @@ the default global configuration object
 
     def on_pre_build (
         self,
-        config,
+        config: config_options.Config,
         **kwargs: typing.Any,
         ):
+        """
+https://www.mkdocs.org/user-guide/plugins/#on_pre_build
+        """
         #print("on_pre_build")
         return
 
 
     def on_env (
         self,
-        env,
-        config,
-        files,
+        env: jinja2.Environment,
+        config: config_options.Config,
+        files: mkdocs.structure.files.Files,
         **kwargs: typing.Any,
-        ):
+        ) -> jinja2.Environment:
+        """
+https://www.mkdocs.org/user-guide/plugins/#on_env
+        """
         #print("on_env")
+        #pprint(vars(env))
         return env
 
 
     def on_nav (
         self,
-        nav,
-        config,
-        files,
+        nav: mkdocs.structure.nav.Navigation,
+        config: config_options.Config,
+        files: mkdocs.structure.files.Files,
         **kwargs: typing.Any,
-        ):
+        ) -> mkdocs.structure.nav.Navigation:
+        """
+https://www.mkdocs.org/user-guide/plugins/#on_nav
+        """
         #print("on_nav")
+        #pprint(vars(nav))
         return nav
 
 
     def on_pre_template (
         self,
         template,
-        template_name,
-        config,
+        template_name: str,
+        config: config_options.Config,
         **kwargs: typing.Any,
         ):
+        """
+https://www.mkdocs.org/user-guide/plugins/#on_pre_template
+        """
         return template
 
 
     def on_template_context (
         self,
-        context,
-        template_name,
-        config,
+        context: dict,
+        template_name: str,
+        config: config_options.Config,
         **kwargs: typing.Any,
-        ):
+        ) -> dict:
+        """
+https://www.mkdocs.org/user-guide/plugins/#on_template_context
+        """
         return context
 
 
     def on_post_template (
         self,
         output_content,
-        template_name,
-        config,
+        template_name: str,
+        config: config_options.Config,
         **kwargs: typing.Any,
         ):
+        """
+https://www.mkdocs.org/user-guide/plugins/#on_post_template
+        """
         return output_content
 
 
     def on_pre_page (
         self,
-        page,
-        config,
-        files,
+        page: mkdocs.structure.pages.Page,
+        config: config_options.Config,
+        files: mkdocs.structure.files.Files,
         **kwargs: typing.Any,
         ):
+        """
+https://www.mkdocs.org/user-guide/plugins/#on_pre_page
+        """
         return page
 
 
     def on_page_read_source (
         self,
-        page,
-        config,
+        page: mkdocs.structure.pages.Page,
+        config: config_options.Config,
         **kwargs: typing.Any,
         ):
+        """
+https://www.mkdocs.org/user-guide/plugins/#on_page_read_source
+        """
         return None
 
 
     def on_page_markdown (
         self,
         markdown: str,
-        page: mkdocs.structure.nav.Page,
+        page: mkdocs.structure.pages.Page,
         config: config_options.Config,
         files: mkdocs.structure.files.Files,
         **kwargs: typing.Any,
@@ -210,32 +239,41 @@ Markdown source text of this page as a string
     def on_page_content (
         self,
         html,
-        page,
-        config,
-        files,
+        page: mkdocs.structure.pages.Page,
+        config: config_options.Config,
+        files: mkdocs.structure.files.Files,
         **kwargs: typing.Any,
         ):
+        """
+https://www.mkdocs.org/user-guide/plugins/#on_page_content
+        """
         return html
 
 
     def on_page_context (
         self,
-        context,
-        page,
-        config,
-        nav,
+        context: dict,
+        page: mkdocs.structure.pages.Page,
+        config: config_options.Config,
+        nav: mkdocs.structure.nav.Navigation,
         **kwargs: typing.Any,
-        ):
+        ) -> dict:
+        """
+https://www.mkdocs.org/user-guide/plugins/#on_page_context
+        """
         return context
 
 
     def on_post_page (
         self,
         output_content,
-        page,
-        config,
+        page: mkdocs.structure.pages.Page,
+        config: config_options.Config,
         **kwargs: typing.Any,
         ):
+        """
+https://www.mkdocs.org/user-guide/plugins/#on_post_page
+        """
         return output_content
 
 
@@ -245,7 +283,9 @@ Markdown source text of this page as a string
         **kwargs: typing.Any,
         ) -> None:
         """
-        Run on post build.
+Run on post build.
+
+https://www.mkdocs.org/user-guide/plugins/#on_post_build
         """
         return
 
@@ -255,4 +295,7 @@ Markdown source text of this page as a string
         server,
         **kwargs: typing.Any,
         ):
+        """
+https://www.mkdocs.org/user-guide/plugins/#on_serve
+        """
         return server
