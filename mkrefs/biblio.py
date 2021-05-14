@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from pprint import pprint
+from pprint import pprint  # pylint: disable=W0611
 import json
 import pathlib
 import tempfile
