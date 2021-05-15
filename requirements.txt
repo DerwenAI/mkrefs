@@ -1,4 +1,8 @@
 Jinja2 >= 2.10.3
-kglab >= 0.4.0
+PyYAML >= 5.1
+kglab >= 0.4
+livereload >= 2.6.1
 mkdocs >= 1.0.4
 typer >= 0.3.2
+
+

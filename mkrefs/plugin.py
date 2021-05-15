@@ -8,8 +8,10 @@ https://www.mkdocs.org/
 https://github.com/DerwenAI/mkrefs
 """
 
+from collections import defaultdict
 from pprint import pprint  # pylint: disable=W0611
 import pathlib
+import sys
 import typing
 
 from mkdocs.config import config_options  # type: ignore  # pylint: disable=E0401
@@ -20,6 +22,7 @@ import mkdocs.structure.pages  # type: ignore  # pylint: disable=E0401
 
 import jinja2
 import livereload  # type: ignore  # pylint: disable=E0401
+import yaml
 
 from .biblio import load_kg, render_biblio
 
@@ -28,18 +31,54 @@ class MkRefsPlugin (mkdocs.plugins.BasePlugin):
     """
 MkDocs plugin for semantic reference pages, constructed from a knowledge graph.
     """
+    _LOCAL_CONFIG_KEYS: dict = {
+        "biblio": {
+            "page": "the name of the generated Markdown file; defaults to `biblio.md`",
+            "graph": "an RDF graph in Turtle (TTL) format; defaults to `biblio.ttl`",
+            "template": "a Jinja2 template; defaults to `biblio.jinja`",
+            },
+        }
 
     config_scheme = (
-        ("mkrefs_bib_page", config_options.Type(str, default="biblio.md")),
-        ("mkrefs_bib_graph", config_options.Type(str, default="biblio.ttl")),
-        ("mkrefs_bib_template", config_options.Type(str, default="biblio.template")),
+        ("mkrefs_config", config_options.Type(str, default="mkrefs.yml")),
     )
 
     def __init__ (self):
         #print("__init__", self.config_scheme)
         self.enabled = True
+        self.local_config: dict = defaultdict()
+
         self.biblio_kg = None
         self.biblio_file = None
+
+
+    def _valid_component_config (
+        self,
+        yaml_path: pathlib.Path,
+        component: str,
+        ) -> bool:
+        """
+Semiprivate helper method to run error checking, for the given MkRefs
+component, of all of its expected fields in the local configuration.
+
+    yaml_path:
+path for the MkRefs local configuration YAML file
+
+    component:
+MkRefs plugin component, e.g. `["biblio", "glossary", "apidocs", "depend"]`
+
+    returns:
+boolean flag, for whether the component is configured properly
+        """
+        if component in self.local_config:
+            for param, message in self._LOCAL_CONFIG_KEYS[component].items():
+                if param not in self.local_config[component]:
+                    print(f"ERROR: `{yaml_path}` is missing the `{component}:{param}` parameter, which should be {message}")
+                    sys.exit(-1)
+
+            return True
+
+        return False
 
 
     def on_config (  # pylint: disable=W0613
@@ -63,9 +102,29 @@ the possibly modified global configuration object
         #print("on_config")
         #pprint(config)
 
-        if self.config["mkrefs_bib_graph"]:
-            biblio_ttl_path = pathlib.Path(config["docs_dir"]) / self.config["mkrefs_bib_graph"]
-            self.biblio_kg = load_kg(biblio_ttl_path)
+        if "mkrefs_config" not in config:
+            print("ERROR missing `mkrefs_config` parameter")
+            sys.exit(-1)
+
+        # load the MkRefs local configuration
+        yaml_path = pathlib.Path(config["docs_dir"]) / config["mkrefs_config"]
+
+        try:
+            with open(yaml_path, "r") as f:
+                self.local_config = yaml.safe_load(f)
+                #print(self.local_config)
+        except Exception as e:  # pylint: disable=W0703
+            print(f"ERROR loading local config: {e}")
+            sys.exit(-1)
+
+        if self._valid_component_config(yaml_path, "biblio"):
+            # load the KG
+            try:
+                graph_path = pathlib.Path(config["docs_dir"]) / self.local_config["biblio"]["graph"]
+                self.biblio_kg = load_kg(graph_path)
+            except Exception as e:  # pylint: disable=W0703
+                print(f"ERROR loading graph: {e}")
+                sys.exit(-1)
 
         return config
 
@@ -94,18 +153,24 @@ the default global configuration object
     returns:
 the possibly modified global files collection
         """
-        self.biblio_file = mkdocs.structure.files.File(
-            path = config["mkrefs_bib_page"],
-            src_dir = config["docs_dir"],
-            dest_dir = config["site_dir"],
-            use_directory_urls = config["use_directory_urls"],
-            )
+        if self.biblio_kg:
+            self.biblio_file = mkdocs.structure.files.File(
+                path = self.local_config["biblio"]["page"],
+                src_dir = config["docs_dir"],
+                dest_dir = config["site_dir"],
+                use_directory_urls = config["use_directory_urls"],
+                )
 
-        files.append(self.biblio_file)
+            files.append(self.biblio_file)
 
-        template_path = pathlib.Path(config["docs_dir"]) / config["mkrefs_bib_template"]
-        markdown_path = pathlib.Path(config["docs_dir"]) / self.biblio_file.src_path
-        render_biblio(self.biblio_kg, template_path, markdown_path)
+            template_path = pathlib.Path(config["docs_dir"]) / self.local_config["biblio"]["template"]
+            markdown_path = pathlib.Path(config["docs_dir"]) / self.biblio_file.src_path
+
+            try:
+                render_biblio(self.biblio_kg, template_path, markdown_path)
+            except Exception as e:  # pylint: disable=W0703
+                print(f"Error rendering bibliography: {e}")
+                sys.exit(-1)
 
         return files
 

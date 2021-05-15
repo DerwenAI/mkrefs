@@ -2,9 +2,7 @@ site_name: MkRefs
 site_description: MkRefs Plugin – semantic references for research tools
 site_url: https://github.com/DerwenAI/mkrefs
 
-mkrefs_bib_page: biblio.md
-mkrefs_bib_graph: biblio.ttl
-mkrefs_bib_template: biblio.template
+mkrefs_config: mkrefs.yml
 
 nav:
     - Home: index.md

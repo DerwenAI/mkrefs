@@ -1,0 +1,4 @@
+biblio:
+  page: biblio.md
+  graph: biblio.ttl
+  template: biblio.jinja
