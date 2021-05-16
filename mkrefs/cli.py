@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from pprint import pprint
 import pathlib
 import typer
 
@@ -19,7 +20,8 @@ def biblio (
 Command to generate a bibliography.
     """
     kg = load_kg(pathlib.Path(graph))
-    render_biblio(kg, pathlib.Path(template), pathlib.Path(markdown))
+    groups = render_biblio(kg, pathlib.Path(template), pathlib.Path(markdown))
+    pprint(groups)
 
 
 @app.command()

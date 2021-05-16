@@ -76,6 +76,12 @@ Denormalize a KG into groups of bibliographic entries so that they can
 be rendered as Markdown.
 
 TODO: use queries to filter/segment the needed entities from the KG
+
+    kg:
+KG containing the bibliography entities
+
+    returns:
+the denormalized entries, as a dict
     """
     # serialize as JSON-LD
     json_path = pathlib.Path(tempfile.NamedTemporaryFile().name)
@@ -193,7 +199,7 @@ def render_biblio (
     kg: kglab.KnowledgeGraph,
     template_path: pathlib.Path,
     markdown_path: pathlib.Path,
-    ) -> None:
+    ) -> typing.Dict[str, list]:
     """
 Render the Markdown for a bibliography, based on the given KG and
 Jinja2 template.
@@ -206,6 +212,9 @@ file path for Jinja2 template for rendering a bibliography page in MkDocs
 
     markdown_path:
 file path for the rendered Markdown file
+
+    returns:
+the denormalized entries, as a dict
     """
     template_file = str(template_path.relative_to(template_path.parent))
     template = get_jinja2_template(template_file, str(template_path.parent))
@@ -213,3 +222,5 @@ file path for the rendered Markdown file
 
     with open(markdown_path, "w") as f:
         f.write(template.render(groups=groups))
+
+    return groups

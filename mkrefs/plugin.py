@@ -36,6 +36,7 @@ MkDocs plugin for semantic reference pages, constructed from a knowledge graph.
             "page": "the name of the generated Markdown file; defaults to `biblio.md`",
             "graph": "an RDF graph in Turtle (TTL) format; defaults to `biblio.ttl`",
             "template": "a Jinja2 template; defaults to `biblio.jinja`",
+            "queries": "a list of SPARQL queries to extract [author, publisher, content] entities",
             },
         }
 
@@ -65,7 +66,7 @@ component, of all of its expected fields in the local configuration.
 path for the MkRefs local configuration YAML file
 
     component:
-MkRefs plugin component, e.g. `["biblio", "glossary", "apidocs", "depend"]`
+MkRefs plugin component, e.g. `["biblio", "glossary", "apidocs", "depend", "index"]`
 
     returns:
 boolean flag, for whether the component is configured properly

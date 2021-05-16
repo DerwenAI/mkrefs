@@ -2,3 +2,5 @@ biblio:
   page: biblio.md
   graph: biblio.ttl
   template: biblio.jinja
+  queries:
+    author: SELECT ?author ?name ?ref_url WHERE { ?author rdf:type foaf:Person . ?author foaf:name ?name . ?author dct:identifier ?ref_url }
