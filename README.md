@@ -34,7 +34,7 @@ The following parameters are expected:
 ## Usage
 
 ```
-mkrefs biblio docs/biblio.ttl docs/biblio.jinja docs/biblio.md
+mkrefs biblio docs/mkrefs.yml
 ```
 
 

@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from pprint import pprint  # pylint: disable=W0611
+from collections import defaultdict, OrderedDict
+from pprint import pprint  # type: ignore # pylint: disable=W0611
 import json
-import pathlib
+import re
 import tempfile
 import typing
 
-import jinja2  # pylint: disable=E0401
+import jinja2  # type: ignore # pylint: disable=E0401
+import pandas as pd  # type: ignore # pylint: disable=E0401
+import pathlib
+
 import kglab
 
 
@@ -54,85 +58,255 @@ loaded Jinja2 template
     return env.get_template(template_file)
 
 
-def is_kind (
-    item: dict,
-    kind_list: typing.List[str],
-    ) -> bool:
+def denorm_entity (
+    df: pd.DataFrame,
+    entity_name: str,
+    ) -> dict:
     """
-Test whether the given JSON-LD content item has a "@type" within the
-specified list.
-    """
-    if "@type" not in item:
-        return False
+Denormalize the result set from a SPARQL query, to collect a specific
+class of entities from the KG, along with attribute for each instance.
 
-    return any(map(lambda k: item["@type"].endswith(k), kind_list))  # pylint: disable=W0108
+    df:
+SPARQL query result set, as a dataframe
 
-
-def denorm_biblio_groups (
-    kg: kglab.KnowledgeGraph,  # pylint: disable=W0621
-    ) -> typing.Dict[str, list]:
-    """
-Denormalize a KG into groups of bibliographic entries so that they can
-be rendered as Markdown.
-
-TODO: use queries to filter/segment the needed entities from the KG
-
-    kg:
-KG containing the bibliography entities
+    entity_name:
+column name for the entity
 
     returns:
-the denormalized entries, as a dict
+denormalized entity list with attributes, as a dict
     """
-    # serialize as JSON-LD
+    col_names = list(df.columns)
+    denorm = {}
+
+    for rec in df.to_records(index=False):
+        values = {}
+
+        for i, val in enumerate(rec):
+            if pd.isna(val):
+                val = None
+            else:
+                s = re.search(r"\<(.*)\>", val)
+
+                if s:
+                    val = s.group(1)
+
+            if col_names[i] == entity_name:
+                entity = val
+            else:
+                values[col_names[i]] = None if pd.isna(val) else val
+
+        denorm[entity] = values
+
+    return denorm
+
+
+def de_bracket (
+    url: str,
+    ) -> str:
+    """
+Extract the URL value from its RDF "bracketed" representation.
+
+    url:
+input URL string
+
+    returns:
+de-bracketed URL string
+    """
+    s = re.search(r"\<(.*)\>", url)
+
+    if s:
+        url = s.group(1)
+
+    return url
+
+
+def get_item_list (
+    kg: kglab.KnowledgeGraph,
+    sparql: str,
+    ) -> typing.Tuple[str, dict]:
+    """
+Query to get a list of entity identifiers to substitute in JSON-LD.
+
+    kg:
+the KG graph object
+
+    sparql:
+SPARQL query
+
+    returns:
+a tuple of the list relation to replace, and the identifier values
+    """
+    df = kg.query_as_df(sparql)
+    list_name = df.columns[1]
+
+    list_ids: typing.Dict[str, list] = defaultdict(list)
+
+    for rec in df.to_records(index=False):
+        key = de_bracket(rec[0])
+        val = de_bracket(rec[1])
+        list_ids[key].append(val)
+
+    return list_name, list_ids
+
+
+def abbrev_key (
+    key: str,
+    ) -> str:
+    """
+Abbreviate the IRI, if any
+
+    key:
+string content to abbreviate
+
+    returns:
+abbreviated IRI content
+    """
+    if key.startswith("@"):
+        return key[1:]
+
+    key = key.split(":")[-1]
+    key = key.split("/")[-1]
+    key = key.split("#")[-1]
+
+    return key
+
+
+def abbrev_iri (
+    item: typing.Any,
+    ) -> typing.Any:
+    """
+Abbreviate the IRIs in JSON-LD graph content, so that Jinja2 templates
+can use it.
+
+    item:
+scalar, list, or dictionary to iterate through
+
+    returns:
+data with abbreviated IRIs
+    """
+    if isinstance(item, dict):
+        d = {
+            abbrev_key(k): abbrev_iri(v)
+            for k, v in item.items()
+            }
+
+        return d
+
+    if isinstance(item, list):
+        l = [
+            abbrev_iri(x)
+            for x in item
+            ]
+
+        return l
+
+    return item
+
+
+def render_reference (
+    template_path: pathlib.Path,
+    markdown_path: pathlib.Path,
+    groups: typing.Dict[str, list],
+    ) -> str:
+    """
+Render the Markdown for a MkRefs reference component, based on the
+given Jinja2 template.
+
+    template_path:
+file path for Jinja2 template for rendering a reference page in MkDocs
+
+    markdown_path:
+file path for the rendered Markdown file
+
+    groups:
+JSON denomalized content data
+
+    returns:
+rendered Markdown
+    """
+    template_file = str(template_path.relative_to(template_path.parent))
+    template = get_jinja2_template(template_file, str(template_path.parent))
+
+    # render the JSON into Markdown using the Jinja2 template
+    with open(markdown_path, "w") as f:
+        f.write(template.render(groups=groups))
+
+    return template.render(groups=groups)
+
+
+def render_biblio (  # pylint: disable=R0914
+    local_config: dict,
+    kg: kglab.KnowledgeGraph,
+    template_path: pathlib.Path,
+    markdown_path: pathlib.Path,
+    ) -> typing.Dict[str, list]:
+    """
+Render the Markdown for a bibliography, based on the given KG and
+Jinja2 template.
+
+    local_config:
+local configuration, including user-configurable SPARQL queries
+
+    kg:
+the KG graph object
+
+    template_path:
+file path for Jinja2 template for rendering a bibliography page in MkDocs
+
+    markdown_path:
+file path for the rendered Markdown file
+
+    returns:
+rendered Markdown
+    """
+    # get the bibliograph entry identifiers
+    sparql = local_config["biblio"]["queries"]["entry"]
+    df = kg.query_as_df(sparql)
+    entry_ids = denorm_entity(df, "entry")
+
+    # get the entity maps
+    entity_map:dict = {}
+
+    sparql = local_config["biblio"]["queries"]["entry_author"]
+    list_name, list_ids = get_item_list(kg, sparql)
+    entity_map[list_name] = list_ids
+
+    sparql = local_config["biblio"]["queries"]["entry_publisher"]
+    list_name, list_ids = get_item_list(kg, sparql)
+    entity_map[list_name] = list_ids
+
+    # extract content as JSON-LD
+    items: dict = {}
+
     json_path = pathlib.Path(tempfile.NamedTemporaryFile().name)
     kg.save_jsonld(json_path)
 
-    # extract content as JSON
-    bib_g = []
-
     with open(json_path, "r") as f:  # pylint: disable=W0621
         bib_j = json.load(f)
-        bib_g = bib_j["@graph"]
 
-    # what are the types of content?
-    types = {  # pylint: disable=W0612
-        item["@type"]
-        for item in bib_g
-        if "@type" in item
-        }
-    #pprint(types)
+        for item in bib_j["@graph"]:
+            id = item["@id"]
+            items[id] = abbrev_iri(item)
 
-    # who are the authors?
-    authors = {
-        item["@id"]: item
-        for item in bib_g
-        if is_kind(item, ["Person"])
-        }
-    #pprint(authors)
+    # remap the JSON-LD for bibliography entries
+    entries: dict = {}
 
-    # which are the publishers?
-    pubs = {
-        item["@id"]: item
-        for item in bib_g
-        if is_kind(item, ["Collection", "Journal", "Proceedings"])
-        }
-    #pprint(pubs)
+    for id, val_dict in entry_ids.items():
+        citekey = val_dict["citeKey"]
+        entries[citekey] = items[id]
 
-    # enumerate and sort the content entries
-    content = sorted(
-        [
-            item
-            for item in bib_g
-            if is_kind(item, ["Article", "Slideshow"])
-            ],
-        key = lambda item: item["https://derwen.ai/ns/v1#citeKey"],
-        )
-    #pprint(content)
+        for key in entries[citekey].keys():
+            if key in entity_map:
+                entries[citekey][key] = [
+                    items[mapped_id]
+                    for mapped_id in entity_map[key][id]
+                    ]
 
     # initialize the `groups` grouping of entries
+    entries = OrderedDict(sorted(entries.items()))
     letters = sorted(list({
-                item["https://derwen.ai/ns/v1#citeKey"][0].upper()
-                for item in content
+                key[0].lower()
+                for key in entries.keys()
                 }))
 
     groups: typing.Dict[str, list] = {  # pylint: disable=W0621
@@ -142,85 +316,10 @@ the denormalized entries, as a dict
 
     # build the grouping of content entries, with the authors and
     # publishers denormalized
-    for item in content:
-        #pprint(item)
+    for citekey, entry in entries.items():
+        groups[citekey[0].lower()].append(entry)
 
-        trans = {
-            "citekey": item["https://derwen.ai/ns/v1#citeKey"],
-            "type": item["@type"].split("/")[-1],
-            "url": item["@id"],
-            "date": item["dct:date"]["@value"],
-            "title": item["dct:title"],
-            "abstract": item["http://purl.org/ontology/bibo/abstract"],
-            }
-
-        trans["auth"] = [
-            {
-                "url": auth["@id"],
-                "name": authors[auth["@id"]]["http://xmlns.com/foaf/0.1/name"],
-                }
-            for auth in item["http://purl.org/ontology/bibo/authorList"]["@list"]
-            ]
-
-        if "http://purl.org/ontology/bibo/doi" in item:
-            trans["doi"] = item["http://purl.org/ontology/bibo/doi"]["@value"]
-
-        if "https://derwen.ai/ns/v1#openAccess" in item:
-            trans["open"] = item["https://derwen.ai/ns/v1#openAccess"]["@id"]
-
-        if "dct:isPartOf" in item:
-            pub = pubs[item["dct:isPartOf"]["@id"]]
-
-            trans["pub"] = {
-                "url": pub["dct:identifier"]["@id"],
-                "title": pub["http://purl.org/ontology/bibo/shortTitle"],
-                }
-
-            if "http://purl.org/ontology/bibo/volume" in item:
-                trans["pub"]["volume"] = item["http://purl.org/ontology/bibo/volume"]["@value"]
-
-            if "http://purl.org/ontology/bibo/issue" in item:
-                trans["pub"]["issue"] = item["http://purl.org/ontology/bibo/issue"]["@value"]
-
-            if "http://purl.org/ontology/bibo/pageStart" in item:
-                trans["pub"]["pageStart"] = item["http://purl.org/ontology/bibo/pageStart"]["@value"]
-
-            if "http://purl.org/ontology/bibo/pageEnd" in item:
-                trans["pub"]["pageEnd"] = item["http://purl.org/ontology/bibo/pageEnd"]["@value"]
-
-        #pprint(trans)
-        letter = item["https://derwen.ai/ns/v1#citeKey"][0].upper()
-        groups[letter].append(trans)
-
-    return groups
-
-
-def render_biblio (
-    kg: kglab.KnowledgeGraph,
-    template_path: pathlib.Path,
-    markdown_path: pathlib.Path,
-    ) -> typing.Dict[str, list]:
-    """
-Render the Markdown for a bibliography, based on the given KG and
-Jinja2 template.
-
-    kg:
-KG containing the bibliography entities
-
-    template_path:
-file path for Jinja2 template for rendering a bibliography page in MkDocs
-
-    markdown_path:
-file path for the rendered Markdown file
-
-    returns:
-the denormalized entries, as a dict
-    """
-    template_file = str(template_path.relative_to(template_path.parent))
-    template = get_jinja2_template(template_file, str(template_path.parent))
-    groups = denorm_biblio_groups(kg)
-
-    with open(markdown_path, "w") as f:
-        f.write(template.render(groups=groups))
+    # render the JSON into Markdown using the Jinja2 template
+    _ = render_reference(template_path, markdown_path, groups)
 
     return groups

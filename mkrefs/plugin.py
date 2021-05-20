@@ -33,10 +33,10 @@ MkDocs plugin for semantic reference pages, constructed from a knowledge graph.
     """
     _LOCAL_CONFIG_KEYS: dict = {
         "biblio": {
-            "page": "the name of the generated Markdown file; defaults to `biblio.md`",
-            "graph": "an RDF graph in Turtle (TTL) format; defaults to `biblio.ttl`",
-            "template": "a Jinja2 template; defaults to `biblio.jinja`",
-            "queries": "a list of SPARQL queries to extract [author, publisher, content] entities",
+            "graph": "an RDF graph in Turtle (TTL) format; e.g., `mkrefs.ttl`",
+            "page": "the generated Markdown page; e.g., `biblio.md`",
+            "template": "a Jinja2 template; e.g., `biblio.jinja`",
+            "queries": "a list of SPARQL queries to extract [author, publisher, entry] entities",
             },
         }
 
@@ -168,7 +168,7 @@ the possibly modified global files collection
             markdown_path = pathlib.Path(config["docs_dir"]) / self.biblio_file.src_path
 
             try:
-                render_biblio(self.biblio_kg, template_path, markdown_path)
+                _ = render_biblio(self.local_config, self.biblio_kg, template_path, markdown_path)
             except Exception as e:  # pylint: disable=W0703
                 print(f"Error rendering bibliography: {e}")
                 sys.exit(-1)
