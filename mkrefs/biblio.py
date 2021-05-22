@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# see license https://github.com/DerwenAI/mkrefs#license-and-copyright
 
 from collections import defaultdict, OrderedDict
 from pprint import pprint  # type: ignore # pylint: disable=W0611

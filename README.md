@@ -43,3 +43,12 @@ mkrefs biblio docs/mkrefs.yml
 [mkdocs-plugins]: http://www.mkdocs.org/user-guide/plugins/
 [mkdocs-template]: https://www.mkdocs.org/user-guide/custom-themes/#template-variables
 [mkdocs-block]: https://www.mkdocs.org/user-guide/styling-your-docs/#overriding-template-blocks
+
+
+## License and Copyright
+
+Source code for **mkrefs** plus its logo, documentation, and examples
+have an [MIT license](https://spdx.org/licenses/MIT.html) which is
+succinct and simplifies use in commercial applications.
+
+All materials herein are Copyright &copy; 2020-2021 Derwen, Inc.

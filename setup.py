@@ -1,8 +1,21 @@
 # type: ignore
 
+import importlib.util
 import pathlib
 import setuptools
 import typing
+
+
+KEYWORDS = [
+    "bibliography",
+    "documentation",
+    "glossary",
+    "kglab",
+    "knowledge graph",
+    "mkdocs",
+    "plugin",
+    "reference",
+    ]
 
 
 def parse_requirements_file (filename: str) -> typing.List:
@@ -11,44 +24,49 @@ def parse_requirements_file (filename: str) -> typing.List:
         return [ l.strip().replace(" ", "") for l in f.readlines() ]
 
 
-setuptools.setup(
-    name = "mkrefs",
-    version = "0.1.0",
+if __name__ == "__main__":
+    spec = importlib.util.spec_from_file_location("mkrefs.version", "mkrefs/version.py")
+    mkrefs_version = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mkrefs_version)
 
-    description = "MkDocs plugin to generate reference Markdown pages",
-    long_description = pathlib.Path("README.md").read_text(),
-    long_description_content_type = "text/markdown",
+    setuptools.setup(
+        name = "mkrefs",
+        version = mkrefs_version.__version__,
 
-    author = "Paco Nathan",
-    author_email = "paco@derwen.ai",
-    license = "MIT",
+        description = "MkDocs plugin to generate reference Markdown pages",
+        long_description = pathlib.Path("README.md").read_text(),
+        long_description_content_type = "text/markdown",
 
-    url = "",
-    keywords = "mkdocs",
+        author = "Paco Nathan",
+        author_email = "paco@derwen.ai",
+        license = "MIT",
+        url = "",
 
-    python_requires = ">=3.6",
-    packages = setuptools.find_packages(exclude=[ "docs" ]),
-    install_requires = parse_requirements_file("requirements.txt"),
+        python_requires = ">=3.6",
+        packages = setuptools.find_packages(exclude=[ "docs" ]),
+        install_requires = parse_requirements_file("requirements.txt"),
 
-    entry_points = {
-        "mkdocs.plugins": [
-            "mkrefs = mkrefs.plugin:MkRefsPlugin",
-            ],
+        entry_points = {
+            "mkdocs.plugins": [
+                "mkrefs = mkrefs.plugin:MkRefsPlugin",
+                ],
 
-        "console_scripts": [
-            "mkrefs = mkrefs.cli:cli",
-            ],
-        },
+            "console_scripts": [
+                "mkrefs = mkrefs.cli:cli",
+                ],
+            },
 
-    classifiers = [
-        "Development Status :: 4 - Beta",
-        "Intended Audience :: Developers",
-        "Intended Audience :: Information Technology",
-        "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python",
-        "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-    ]
-)
+        keywords = ", ".join(KEYWORDS),
+        classifiers = [
+            "Development Status :: 4 - Beta",
+            "Intended Audience :: Developers",
+            "Intended Audience :: Information Technology",
+            "Intended Audience :: Science/Research",
+            "License :: OSI Approved :: MIT License",
+            "Programming Language :: Python",
+            "Programming Language :: Python :: 3 :: Only",
+            "Topic :: Documentation",
+            "Topic :: Software Development :: Documentation",
+            "Topic :: Text Processing :: Markup :: Markdown",
+            ]
+        )
