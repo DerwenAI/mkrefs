@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # see license https://github.com/DerwenAI/mkrefs#license-and-copyright
 
-import sys
 import typing
 
 
