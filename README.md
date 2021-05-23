@@ -77,7 +77,7 @@ vocabulary:
 The `queries` parameter has three required SPARQL queries:
 
   * `entry` – to select the identifiers for all of the bibliograpy entries
-  * `entry_author` – a mapping to indentify author links for each bibliography entry
+  * `entry_author` – a mapping to identify author links for each bibliography entry
   * `entry_publisher` - the publisher link for each bibliography entry (if any)
 
 Note that the named of the generated Markdown page for the
