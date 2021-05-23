@@ -26,7 +26,7 @@ integrated.
 
 A key takeaway is that many software engineering aspects of open
 source projects involve graphs, therefore a knowledge graph can
-provide an integral part of an open source repository.  
+provide an integral part of an open source repository.
 Moreover, by using semantic representation (RDF) projects that
 integrate with each other can share (i.e., federate) common resources,
 for example to share definitions, analyze mutual dependencies, etc.
