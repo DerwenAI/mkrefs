@@ -192,9 +192,10 @@ All materials herein are Copyright &copy; 2021 Derwen, Inc.
 
 This plugin code is based on the marvelous examples in
 <https://github.com/byrnereese/mkdocs-plugin-template>
-with kudos to [@byrnereese](https://github.com/byrnereese/)
+with kudos to [@byrnereese](https://github.com/byrnereese/),
 and also many thanks to 
-[@louisguitton](https://github.com/louisguitton)
+[@louisguitton](https://github.com/louisguitton),
+[@dmccreary](https://github.com/dmccreary),
 and
-[@dmccreary](https://github.com/dmccreary)
+[@LarrySwanson](https://github.com/LarrySwanson)
 for their inspiration and insights.
