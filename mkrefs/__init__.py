@@ -4,6 +4,8 @@
 
 from .plugin import MkRefsPlugin
 
+from .biblio import load_kg, render_biblio
+
 from .cli import cli
 
 from .version import __version__
