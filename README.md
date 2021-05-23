@@ -21,6 +21,9 @@ Only the *biblio* component has been added to **MkRefs** so far,
 although these other components exist in other projects and are being
 integrated.
 
+
+## Why does this matter?
+
 A key takeaway is that many software engineering aspects of open
 source projects involve graphs, therefore a knowledge graph can
 provide an integral part of an open source repository.  
@@ -54,8 +57,8 @@ required sub-parameters:
 
  * `graph` – an RDF graph represented as a Turtle (TTL) file, e.g., `mkrefs.ttl`
  * `page` – name of the generated Markdown page, e.g., `biblio.md`
- * `template` – a Jinja2 template to generate the Markdown, e.g., `biblio.jinja`
- * `queries` – SPARQL queries used to extract bibliography data from the knowledge graph
+ * `template` – a [Jinja2 template](https://jinja.palletsprojects.com/en/3.0.x/) to generate Markdown, e.g., `biblio.jinja`
+ * `queries` – [SPARQL queries](https://rdflib.readthedocs.io/en/stable/intro_to_sparql.html) used to extract bibliography data from the knowledge graph
 
 See the [`mkrefs.ttl`](https://github.com/DerwenAI/mkrefs/blob/main/docs/mkrefs.ttl)
 file for an example bibliography represented in RDF.
@@ -86,6 +89,33 @@ You may use any valid RDF representation for a bibliography.
 Just be sure to change the three SPARQL queries and the Jinja2
 template accordingly.
 
+While this example uses an adaptation of the
+[MLA Citation Style](https://www.easybib.com/guides/citation-guides/mla-format/mla-citation/),
+feel free to modify the Jinja2 template to generate whatever
+bibliographic style you need.
+
+Let us know if you need features to parse and generate
+[BibTeX](http://www.bibtex.org/).
+
+
+## Best Practices
+
+Where possible, the bibliography entries should use the conventions at
+<https://www.bibsonomy.org/>
+for their [*citation keys*](https://bibdesk.sourceforge.io/manual/BibDeskHelp_2.html).
+
+Journal abbreviations should use
+[*ISO 4*](https://en.wikipedia.org/wiki/ISO_4) standards, 
+for example from <https://academic-accelerator.com/Journal-Abbreviation/System>
+
+Links to online versions of cited works should use
+[DOI](https://www.doi.org/)
+for [*persistent identifiers*](https://www.crossref.org/education/metadata/persistent-identifiers/).
+
+When available, 
+[*open access*](https://peerj.com/preprints/3119v1/)
+URLs should be listed as well.
+
 
 ## Usage
 
@@ -105,6 +135,48 @@ plus two utility functions:
 
   * `load_kg()`
   * `render_biblio()`
+
+
+## What is going on here?
+
+When the plugin runs,
+
+1. It parses its configuration file to identify the target Markdown page to generate and the Jinja2 template
+2. The plugin also loads an RDF graph from the indicated TTL file
+3. Three SPARQL queries are run to identify the unique entities to extract from the graph
+4. The graph is serialized as [JSON-LD](https://derwen.ai/docs/kgl/ref/#kglab.KnowledgeGraph.save_jsonld)
+5. The `author`, `publisher`, and bibliography `entry` entities are used to *denormalize* the graph into a JSON data object
+6. The JSON is rendered using the Jinja2 template to generate the Markdown
+7. The Markdown page is parsed and rendered by MkDocs as HTML, etc.
+
+
+## Caveats
+
+While the [`MkDocs`](https://www.mkdocs.org/) utility is astoundingly useful,
+its documentation (and coding style) leave much room for improvement.
+The [documentation for developing plugins](https://www.mkdocs.org/user-guide/plugins/#developing-plugins)
+is not even close to what happens when its code executes.
+
+Consequently, the **MkRefs** project is an attempt to reverse-engineer
+the code from many other MkDocs plugins, while documenting its observed
+event sequence, required parameters, limitations and workarounds, etc.
+
+Two issues persist, where you will see warnings even though the **MkRefs**
+code is handling configuration as recommended:
+
+```
+WARNING -  Config value: 'mkrefs_config'. Warning: Unrecognised configuration name: mkrefs_config 
+```
+
+and
+
+```
+INFO    -  The following pages exist in the docs directory, but are not included in the "nav" configuration:
+  - biblio.md 
+```
+
+For now, you can simply ignore both of these warnings.
+Meanwhile, we'll work on eliminating them.
 
 
 ## License and Copyright
