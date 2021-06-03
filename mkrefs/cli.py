@@ -7,7 +7,10 @@ import pathlib
 import typer
 import yaml
 
-from .biblio import load_kg, render_biblio
+from .glossary import render_glossary
+from .biblio import render_biblio
+from .util import load_kg
+
 
 app = typer.Typer()
 

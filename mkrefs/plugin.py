@@ -25,7 +25,9 @@ import jinja2
 import livereload  # type: ignore  # pylint: disable=E0401
 import yaml
 
-from .biblio import load_kg, render_biblio
+from .glossary import render_glossary
+from .biblio import render_biblio
+from .util import load_kg
 
 
 class MkRefsPlugin (mkdocs.plugins.BasePlugin):
@@ -33,6 +35,13 @@ class MkRefsPlugin (mkdocs.plugins.BasePlugin):
 MkDocs plugin for semantic reference pages, constructed from a knowledge graph.
     """
     _LOCAL_CONFIG_KEYS: dict = {
+        "glossary": {
+            "graph": "an RDF graph in Turtle (TTL) format; e.g., `mkrefs.ttl`",
+            "page": "the generated Markdown page; e.g., `glossary.md`",
+            "template": "a Jinja2 template; e.g., `glossary.jinja`",
+            "queries": "a list of SPARQL queries to extract [definition, taxonomy, citation] entities",
+            },
+
         "biblio": {
             "graph": "an RDF graph in Turtle (TTL) format; e.g., `mkrefs.ttl`",
             "page": "the generated Markdown page; e.g., `biblio.md`",
@@ -49,6 +58,9 @@ MkDocs plugin for semantic reference pages, constructed from a knowledge graph.
         #print("__init__", self.config_scheme)
         self.enabled = True
         self.local_config: dict = defaultdict()
+
+        self.glossary_kg = None
+        self.glossary_file = None
 
         self.biblio_kg = None
         self.biblio_file = None
@@ -119,8 +131,17 @@ the possibly modified global configuration object
             print(f"ERROR loading local config: {e}")
             sys.exit(-1)
 
+        if self._valid_component_config(yaml_path, "glossary"):
+            # load the KG for the glossary
+            try:
+                graph_path = pathlib.Path(config["docs_dir"]) / self.local_config["glossary"]["graph"]
+                self.glossary_kg = load_kg(graph_path)
+            except Exception as e:  # pylint: disable=W0703
+                print(f"ERROR loading graph: {e}")
+                sys.exit(-1)
+
         if self._valid_component_config(yaml_path, "biblio"):
-            # load the KG
+            # load the KG for the bibliography
             try:
                 graph_path = pathlib.Path(config["docs_dir"]) / self.local_config["biblio"]["graph"]
                 self.biblio_kg = load_kg(graph_path)
@@ -155,6 +176,25 @@ the default global configuration object
     returns:
 the possibly modified global files collection
         """
+        if self.glossary_kg:
+            self.glossary_file = mkdocs.structure.files.File(
+                path = self.local_config["glossary"]["page"],
+                src_dir = config["docs_dir"],
+                dest_dir = config["site_dir"],
+                use_directory_urls = config["use_directory_urls"],
+                )
+
+            files.append(self.glossary_file)
+
+            template_path = pathlib.Path(config["docs_dir"]) / self.local_config["glossary"]["template"]
+            markdown_path = pathlib.Path(config["docs_dir"]) / self.glossary_file.src_path
+
+            try:
+                _ = render_glossary(self.local_config, self.glossary_kg, template_path, markdown_path)
+            except Exception as e:  # pylint: disable=W0703
+                print(f"Error rendering glossary: {e}")
+                sys.exit(-1)
+
         if self.biblio_kg:
             self.biblio_file = mkdocs.structure.files.File(
                 path = self.local_config["biblio"]["page"],

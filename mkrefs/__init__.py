@@ -4,7 +4,11 @@
 
 from .plugin import MkRefsPlugin
 
-from .biblio import load_kg, render_biblio
+from .glossary import render_glossary
+
+from .biblio import render_biblio
+
+from .util import load_kg
 
 from .cli import cli
 

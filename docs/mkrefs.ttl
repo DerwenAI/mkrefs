@@ -356,7 +356,7 @@ derw:topic_Transformers
 derw:topic_Stop_Words
   a derw:Topic ;
   skos:prefLabel "stop words"@en ;
-  skos:broader derw:topic_Natural_Language ,
+  skos:broader derw:topic_Natural_Language ;
   skos:closeMatch wd:Q80735 ,
       lcsh:sh85046249 ;
   skos:definition "Words to be filtered out during natural language processing."@en
@@ -365,7 +365,7 @@ derw:topic_Stop_Words
 derw:topic_Phrase_Extraction
   a derw:Topic ;
   skos:prefLabel "phrase extraction"@en ;
-  skos:broader derw:topic_Natural_Language ,
+  skos:broader derw:topic_Natural_Language ;
   skos:closeMatch wd:Q66709886 ;
   skos:definition "Selecting representative phrases from a document as its characteristic entities; in contrast to *keyword* analysis."@en
 .

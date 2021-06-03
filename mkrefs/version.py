@@ -9,4 +9,4 @@ import typing
 ## Python version checking
 
 MIN_PY_VERSION: typing.Tuple = (3, 6,)
-__version__: str = "0.1.0"
+__version__: str = "0.2.0"

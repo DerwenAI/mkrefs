@@ -2,6 +2,8 @@ glossary:
   graph: mkrefs.ttl
   page: glossary.md
   template: glossary.jinja
+  queries:
+    entry: FOO
 
 biblio:
   graph: mkrefs.ttl
