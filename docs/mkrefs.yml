@@ -3,7 +3,7 @@ glossary:
   page: glossary.md
   template: glossary.jinja
   queries:
-    entry: FOO
+    entry: SELECT ?entry ?label WHERE { ?entry a derw:Topic . ?entry skos:prefLabel ?label }
 
 biblio:
   graph: mkrefs.ttl

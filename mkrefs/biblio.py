@@ -50,9 +50,9 @@ denormalized entity list with attributes, as a dict
                     val = s.group(1)
 
             if col_names[i] == entity_name:
-                entity = val
+                entity = str(val)
             else:
-                values[col_names[i]] = None if pd.isna(val) else val
+                values[col_names[i]] = None if pd.isna(val) else str(val)
 
         denorm[entity] = values
 
@@ -193,7 +193,7 @@ rendered Markdown
     entry_ids = denorm_entity(df, "entry")
 
     # get the entity maps
-    entity_map:dict = {}
+    entity_map: dict = {}
 
     sparql = local_config["biblio"]["queries"]["entry_author"]
     list_name, list_ids = get_item_list(kg, sparql)
@@ -212,9 +212,10 @@ rendered Markdown
     with open(json_path, "r") as f:  # pylint: disable=W0621
         bib_j = json.load(f)
 
-        for item in bib_j["@graph"]:
-            id = item["@id"]
-            items[id] = abbrev_iri(item)
+        items = {
+            item["@id"]: abbrev_iri(item)
+            for item in bib_j["@graph"]
+        }
 
     # remap the JSON-LD for bibliography entries
     entries: dict = {}
@@ -238,14 +239,15 @@ rendered Markdown
                 }))
 
     groups: typing.Dict[str, list] = {  # pylint: disable=W0621
-        l: []
-        for l in letters
+        letter: []
+        for letter in letters
         }
 
     # build the grouping of content entries, with the authors and
     # publishers denormalized
     for citekey, entry in entries.items():
-        groups[citekey[0].lower()].append(entry)
+        letter = citekey[0].lower()
+        groups[letter].append(entry)
 
     # render the JSON into Markdown using the Jinja2 template
     _ = render_reference(template_path, markdown_path, groups)

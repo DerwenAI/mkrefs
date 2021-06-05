@@ -251,7 +251,7 @@ derw:Topic a skos:Concept ,
 
 derw:topic_Natural_Language
   a derw:Topic ;
-  skos:prefLabel "Natural Language"@en ;
+  skos:prefLabel "natural language"@en ;
   skos:altLabel "NLP"@en ;
   skos:closeMatch wd:Q30642 ,
     lcsh:sh88002425 ,
@@ -394,7 +394,7 @@ derw:topic_Entity_Linking
 
 derw:topic_Knowledge_Graph
   a derw:Topic ;
-  skos:prefLabel "Knowledge Graph"@en ;
+  skos:prefLabel "knowledge graph"@en ;
   skos:altLabel "KG"@en ;
   skos:closeMatch wd:Q33002955 ,
     <https://www.poolparty.biz/what-is-a-knowledge-graph/> ;
