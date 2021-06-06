@@ -126,26 +126,28 @@ required sub-parameters:
 
 See the [`mkrefs.ttl`](https://github.com/DerwenAI/mkrefs/blob/main/docs/mkrefs.ttl)
 file for an example glossary represented in RDF.
-This comes from the documentation for the [`pytextrank`](https://derwen.ai/docs/ptr/glossary/)
+This example RDF comes from documentation for the
+[`pytextrank`](https://derwen.ai/docs/ptr/glossary/)
 open source project.
 
 In the example RDF, the [*cito*](http://purl.org/spar/cito/)
 vocabulary represents citations to locally represented bibliographic
 entries.
 The [*skos*](http://www.w3.org/2004/02/skos/core#) vocabulary
-represents taxonomy features, e.g., semantic relations among glossary entries.
-This also uses a definition from the [*derwen*](https://derwen.ai/ns/v1)
-vocabulary:
+provides support for [*taxonomy*](http://accidental-taxonomist.blogspot.com/)
+features, e.g., semantic relations among glossary entries.
+This example RDF also uses a definition from the
+[*derwen*](https://derwen.ai/ns/v1) vocabulary:
 
   * `derw:Topic` – a `skos:Concept` used to represent glossary entries
 
 The `queries` parameter has three required SPARQL queries:
 
   * `entry` – to select the identifiers for all of the bibliograpy entries
-  * `entry_alt` – a mapping of synonyms (if any)
+  * `entry_syn` – a mapping of synonyms (if any)
   * `entry_ref` – a mapping of external references (if any)
   * `entry_cite` – citations to the local bibliography citekeys (if any)
-  * `entry_hyper` – a mapping of hypernyms (if any)
+  * `entry_hyp` – a mapping of [*hypernyms*](https://en.wikipedia.org/wiki/Hyponymy_and_hypernymy) (if any)
 
 Note that the named of the generated Markdown page for the glossary
 must appear in the `nav` section of your `mkdocs.yml` configuration

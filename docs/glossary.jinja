@@ -12,7 +12,7 @@ Described in: {% else %}, {% endif %}{{ cite_uri }}{% endfor %}
 {% if item.hypernym|length > 1 %}
 Broader:
 
-{% for hyper_uri in item.hypernym %}  * {{ hyper_uri|safe }}
+{% for hyp_uri in item.hypernym %}  * {{ hyp_uri|safe }}
 {% endfor %}{% endif %}
 {% if item.closeMatch|length > 1 %}
 References:

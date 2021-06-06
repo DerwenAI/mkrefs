@@ -68,7 +68,7 @@ rendered Markdown
             for item in bib_j["@graph"]
         }
 
-    # remap the JSON-LD for bibliography entries
+    # denormalize the JSON-LD for bibliography entries
     entries: dict = {}
 
     for id, val_dict in entry_ids.items():
@@ -94,8 +94,7 @@ rendered Markdown
         for letter in letters
         }
 
-    # build the grouping of content entries, with the authors and
-    # publishers denormalized
+    # build the grouping of content entries
     for citekey, entry in entries.items():
         letter = citekey[0].lower()
         groups[letter].append(entry)
