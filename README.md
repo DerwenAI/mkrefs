@@ -17,9 +17,9 @@ including:
   * *depend* – semantic dependency graph for Python libraries, generated as RDF from `setup.py`
   * *index* – semantic search index, generated as RDF from MkDocs content
 
-Only the *biblio* component has been added to **MkRefs** so far,
-although these other components exist in other projects and are being
-integrated.
+Only the *biblio* and *glossary* components has been added to
+**MkRefs** so far, although these other mentioned components exist in
+separate projects and are being integrated.
 
 
 ## Why does this matter?
@@ -66,7 +66,7 @@ This comes from the documentation for the [`pytextrank`](https://derwen.ai/docs/
 open source project.
 
 In the example RDF, the [*bibo*](http://bibliontology.com/) vocabulary represents
-bibliographic citations, and the [*FOAF*](http://xmlns.com/foaf/spec/) vocabulary
+bibliographic entries, and the [*FOAF*](http://xmlns.com/foaf/spec/) vocabulary
 represents authors.
 This also uses two custom OWL relations from the [*derwen*](https://derwen.ai/ns/v1)
 vocabulary:
@@ -94,13 +94,10 @@ While this example uses an adaptation of the
 feel free to modify the Jinja2 template to generate whatever
 bibliographic style you need.
 
-Let us know if you need features to parse and generate
-[BibTeX](http://www.bibtex.org/).
 
+### Best Practices: constructing bibliographies
 
-## Best Practices
-
-Where possible, the bibliography entries should use the conventions at
+As much as possible, bibliography entries should use the conventions at
 <https://www.bibsonomy.org/>
 for their [*citation keys*](https://bibdesk.sourceforge.io/manual/BibDeskHelp_2.html).
 
@@ -117,6 +114,49 @@ When available,
 URLs should be listed as well.
 
 
+## Glossary
+
+A `glossary` parameter within the configuration file expects four
+required sub-parameters:
+
+ * `graph` – an RDF graph represented as a Turtle (TTL) file, e.g., `mkrefs.ttl`
+ * `page` – name of the generated Markdown page, e.g., `glossary.md`
+ * `template` – a [Jinja2 template](https://jinja.palletsprojects.com/en/3.0.x/) to generate Markdown, e.g., `glossary.jinja`
+ * `queries` – [SPARQL queries](https://rdflib.readthedocs.io/en/stable/intro_to_sparql.html) used to extract glossary data from the knowledge graph
+
+See the [`mkrefs.ttl`](https://github.com/DerwenAI/mkrefs/blob/main/docs/mkrefs.ttl)
+file for an example glossary represented in RDF.
+This comes from the documentation for the [`pytextrank`](https://derwen.ai/docs/ptr/glossary/)
+open source project.
+
+In the example RDF, the [*cito*](http://purl.org/spar/cito/)
+vocabulary represents citations to locally represented bibliographic
+entries.
+The [*skos*](http://www.w3.org/2004/02/skos/core#) vocabulary
+represents taxonomy features, e.g., semantic relations among glossary entries.
+This also uses a definition from the [*derwen*](https://derwen.ai/ns/v1)
+vocabulary:
+
+  * `derw:Topic` – a `skos:Concept` used to represent glossary entries
+
+The `queries` parameter has three required SPARQL queries:
+
+  * `entry` – to select the identifiers for all of the bibliograpy entries
+  * `entry_alt` – a mapping of synonyms (if any)
+  * `entry_ref` – a mapping of external references (if any)
+  * `entry_cite` – citations to the local bibliography citekeys (if any)
+  * `entry_hyper` – a mapping of hypernyms (if any)
+
+Note that the named of the generated Markdown page for the glossary
+must appear in the `nav` section of your `mkdocs.yml` configuration
+file.
+See the structure used in this repo for an example.
+
+You may use any valid RDF representation for a glossary.
+Just be sure to change the three SPARQL queries and the Jinja2
+template accordingly.
+
+
 ## Usage
 
 The standard way to generate documentation with MkDocs is:
@@ -124,17 +164,21 @@ The standard way to generate documentation with MkDocs is:
 mkdocs build
 ```
 
-However, there's also a command line *entry point* provided:
-```
-mkrefs biblio docs/mkrefs.yml
-```
-
-If you'd prefer to generate a bibliography programmatically within
+If you'd prefer to generate reference pages programmatically using
 Python scripts, see the code for usage of the `MkRefsPlugin` class,
-plus two utility functions:
+plus some utility functions:
 
   * `load_kg()`
   * `render_biblio()`
+  * `render_glossary()`
+
+There are also command line *entry points* provided, which can be
+helpful during dev/test cycles on the semantic representation of your
+content:
+```
+mkrefs biblio docs/mkrefs.yml
+mkrefs glossary docs/mkrefs.yml
+```
 
 
 ## What is going on here?
@@ -172,11 +216,18 @@ and
 
 ```
 INFO    -  The following pages exist in the docs directory, but are not included in the "nav" configuration:
-  - biblio.md 
+  - biblio.md
+  - glossary.md 
 ```
 
 For now, you can simply ignore both of these warnings.
 Meanwhile, we'll work on eliminating them.
+
+
+## Feature roadmap
+
+Let us know if you need features to parse and generate
+[BibTeX](http://www.bibtex.org/).
 
 
 ## License and Copyright

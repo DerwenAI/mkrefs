@@ -267,7 +267,7 @@ derw:topic_Summarization
   skos:closeMatch wd:Q1394144 ,
     <http://nlpprogress.com/english/summarization.html> ;
   skos:broader derw:topic_Natural_Language ;
-  skos:definition "Producing a shorter version of one or more documents which preserves most of the input's meaning."@en
+  skos:definition "Producing a shorter version of one or more documents, while preserving most of the input's meaning."@en
 .
 
 derw:topic_Abstractive_Summarization
@@ -417,7 +417,7 @@ derw:topic_Textgraphs
     <http://www.gabormelli.com/RKB/Text_Graph> ,
     <http://www.textgraphs.org/> ;
   skos:broader derw:topic_Natural_Language ,
-    derw:topic_Graph_Algorithm ;
+    derw:topic_Graph_Algorithms ;
   skos:definition "Use of graph algorithms for NLP, based on a graph representation of a source text."@en
 .
 
