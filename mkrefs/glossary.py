@@ -43,8 +43,8 @@ rendered Markdown
     df = kg.query_as_df(sparql, simplify=False, pythonify=True)
     entry_ids = denorm_entity(df, "entry")
 
-    sparql = local_config["glossary"]["queries"]["entry_alt"]
-    _, alt_labels = get_item_list(kg, sparql)
+    sparql = local_config["glossary"]["queries"]["entry_syn"]
+    _, syn_labels = get_item_list(kg, sparql)
 
     # get the entity maps
     entity_map: dict = {}
@@ -54,25 +54,25 @@ rendered Markdown
     entity_map[list_name] = list_ids
 
     ## localize the taxonomy for hypernyms
-    sparql = local_config["glossary"]["queries"]["entry_hyper"]
+    sparql = local_config["glossary"]["queries"]["entry_hyp"]
     list_name, list_ids = get_item_list(kg, sparql)
-    localized_hyper_ids: dict = {}
+    localized_hyp_ids: dict = {}
 
     for topic_uri, items in list_ids.items():
-        hyper_ids: list = []
+        hyp_ids: list = []
 
         for hypernym in items:
             if hypernym in entry_ids:
-                hyper_label = entry_ids[hypernym]["label"]
-                hyper_link = hyper_label.replace(" ", "-")
+                hyp_label = entry_ids[hypernym]["label"]
+                hyp_link = hyp_label.replace(" ", "-")
 
-                hyper_ids.append(f"[{hyper_label}](#{hyper_link})")
+                hyp_ids.append(f"[{hyp_label}](#{hyp_link})")
             else:
-                hyper_ids.append(f"<a href='{hypernym}' target='_blank'>{hypernym}</a>")
+                hyp_ids.append(f"<a href='{hypernym}' target='_blank'>{hypernym}</a>")
 
-        localized_hyper_ids[topic_uri] = hyper_ids
+        localized_hyp_ids[topic_uri] = hyp_ids
 
-    entity_map[list_name] = localized_hyper_ids
+    entity_map[list_name] = localized_hyp_ids
 
     ## localize the citekey entries for the bibliography
     sparql = local_config["glossary"]["queries"]["entry_cite"]
@@ -103,7 +103,7 @@ rendered Markdown
             if item["@id"] in entry_ids
         }
 
-    # remap the JSON-LD for glossary entries
+    # denormalize the JSON-LD for glossary entries
     for id, val_dict in entry_ids.items():
         definition = val_dict["label"]
 
@@ -112,11 +112,11 @@ rendered Markdown
                 if topic_uri == id:
                     entries[definition][key] = items
 
-    # add redirects for the alt labels
-    for topic_uri, items in alt_labels.items():
-        for alt_label in items:
-            entries[alt_label] = {
-                "label": alt_label,
+    # add redirects for the synonyms
+    for topic_uri, items in syn_labels.items():
+        for synonym in items:
+            entries[synonym] = {
+                "label": synonym,
                 "redirect": entry_ids[topic_uri]["label"],
             }
 
@@ -132,8 +132,7 @@ rendered Markdown
         for letter in letters
         }
 
-    # build the grouping of content entries, with the reference links
-    # and citations denormalized
+    # build the grouping of content entries
     for definition, entry in entries.items():
         letter = definition[0].lower()
         groups[letter].append(entry)
