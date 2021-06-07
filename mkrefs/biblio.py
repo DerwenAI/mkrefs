@@ -38,7 +38,7 @@ file path for the rendered Markdown file
     returns:
 rendered Markdown
     """
-    # get the bibliograph entry identifiers
+    # get the bibliography entry identifiers
     sparql = local_config["biblio"]["queries"]["entry"]
     df = kg.query_as_df(sparql)
     entry_ids = denorm_entity(df, "entry")

@@ -25,16 +25,28 @@ import jinja2
 import livereload  # type: ignore  # pylint: disable=E0401
 import yaml
 
-from .glossary import render_glossary
+from .apidocs import render_apidocs
 from .biblio import render_biblio
+from .glossary import render_glossary
 from .util import load_kg
 
 
 class MkRefsPlugin (mkdocs.plugins.BasePlugin):
     """
-MkDocs plugin for semantic reference pages, constructed from a knowledge graph.
+MkDocs plugin for semantic reference pages, partly constructed from an
+input knowledge graph, and partly by parsing code and dependencies to
+construct portions of a knowledge graph.
     """
     _LOCAL_CONFIG_KEYS: dict = {
+        "apidocs": {
+            "page": "the generated Markdown page; e.g., `ref.md`",
+            "template": "a Jinja2 template; e.g., `ref.jinja`",
+            "module": "module name for the package",
+            "path": "path to the source modules",
+            "git": "URL to the source code in a public Git repository",
+            "includes": "class and function names to include",
+            },
+
         "glossary": {
             "graph": "an RDF graph in Turtle (TTL) format; e.g., `mkrefs.ttl`",
             "page": "the generated Markdown page; e.g., `glossary.md`",
@@ -58,6 +70,8 @@ MkDocs plugin for semantic reference pages, constructed from a knowledge graph.
         #print("__init__", self.config_scheme)
         self.enabled = True
         self.local_config: dict = defaultdict()
+
+        self.apidocs_file = None
 
         self.glossary_kg = None
         self.glossary_file = None
@@ -131,10 +145,13 @@ the possibly modified global configuration object
             print(f"ERROR loading local config: {e}")
             sys.exit(-1)
 
+        reuse_graph_path = None
+
         if self._valid_component_config(yaml_path, "glossary"):
             # load the KG for the glossary
             try:
                 graph_path = pathlib.Path(config["docs_dir"]) / self.local_config["glossary"]["graph"]
+                reuse_graph_path = graph_path
                 self.glossary_kg = load_kg(graph_path)
             except Exception as e:  # pylint: disable=W0703
                 print(f"ERROR loading graph: {e}")
@@ -144,7 +161,11 @@ the possibly modified global configuration object
             # load the KG for the bibliography
             try:
                 graph_path = pathlib.Path(config["docs_dir"]) / self.local_config["biblio"]["graph"]
-                self.biblio_kg = load_kg(graph_path)
+
+                if graph_path == reuse_graph_path:
+                    self.biblio_kg = self.glossary_kg
+                else:
+                    self.biblio_kg = load_kg(graph_path)
             except Exception as e:  # pylint: disable=W0703
                 print(f"ERROR loading graph: {e}")
                 sys.exit(-1)
@@ -176,6 +197,25 @@ the default global configuration object
     returns:
 the possibly modified global files collection
         """
+        if self.local_config["apidocs"]["page"]:
+            self.apidocs_file = mkdocs.structure.files.File(
+                path = self.local_config["apidocs"]["page"],
+                src_dir = config["docs_dir"],
+                dest_dir = config["site_dir"],
+                use_directory_urls = config["use_directory_urls"],
+                )
+
+            files.append(self.apidocs_file)
+
+            template_path = pathlib.Path(config["docs_dir"]) / self.local_config["apidocs"]["template"]
+            markdown_path = pathlib.Path(config["docs_dir"]) / self.apidocs_file.src_path
+
+            try:
+                _ = render_apidocs(self.local_config, template_path, markdown_path)
+            except Exception as e:  # pylint: disable=W0703
+                print(f"Error rendering apidocs: {e}")
+                sys.exit(-1)
+
         if self.glossary_kg:
             self.glossary_file = mkdocs.structure.files.File(
                 path = self.local_config["glossary"]["page"],
@@ -571,7 +611,7 @@ written to disk.
 
 https://www.mkdocs.org/user-guide/plugins/#on_post_page
 
-    output:
+    output_content:
 the default output of the rendered template, as string
 
     page:
