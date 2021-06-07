@@ -42,7 +42,6 @@ construct portions of a knowledge graph.
             "page": "the generated Markdown page; e.g., `ref.md`",
             "template": "a Jinja2 template; e.g., `ref.jinja`",
             "module": "module name for the package",
-            "path": "path to the source modules",
             "git": "URL to the source code in a public Git repository",
             "includes": "class and function names to include",
             },
@@ -119,7 +118,7 @@ The `config` event is the first event called on MkDocs build and gets
 run immediately after the user configuration is loaded and validated.
 Any alterations to the configuration should be made here.
 
-https://www.mkdocs.org/user-guide/plugins/#on_config
+<https://www.mkdocs.org/user-guide/plugins/#on_config>
 
     config:
 the default global configuration object
@@ -269,7 +268,7 @@ the possibly modified global files collection
 This event does not alter any variables.
 Use this event to call pre-build scripts.
 
-https://www.mkdocs.org/user-guide/plugins/#on_pre_build
+<https://www.mkdocs.org/user-guide/plugins/#on_pre_build>
 
     config:
 global configuration object
@@ -289,7 +288,7 @@ global configuration object
 The `nav` event is called after the site navigation is created and can
 be used to alter the site navigation.
 
-https://www.mkdocs.org/user-guide/plugins/#on_nav
+<https://www.mkdocs.org/user-guide/plugins/#on_nav>
 
     nav:
 the default global navigation object
@@ -319,7 +318,7 @@ the possibly modified global navigation object
 The `env` event is called after the Jinja template environment is
 created and can be used to alter the Jinja environment.
 
-https://www.mkdocs.org/user-guide/plugins/#on_env
+<https://www.mkdocs.org/user-guide/plugins/#on_env>
 
     env:
 global Jinja environment
@@ -347,7 +346,7 @@ the possibly modified global Jinja environment
 This event does not alter any variables.
 Use this event to call post-build scripts.
 
-https://www.mkdocs.org/user-guide/plugins/#on_post_build
+<https://www.mkdocs.org/user-guide/plugins/#on_post_build>
 
     config:
 global configuration object
@@ -367,7 +366,7 @@ The `pre_template` event is called immediately after the subject
 template is loaded and can be used to alter the content of the
 template.
 
-https://www.mkdocs.org/user-guide/plugins/#on_pre_template
+<https://www.mkdocs.org/user-guide/plugins/#on_pre_template>
 
     template:
 the template contents, as a string
@@ -396,7 +395,7 @@ The `template_context` event is called immediately after the context
 is created for the subject template and can be used to alter the
 context for that specific template only.
 
-https://www.mkdocs.org/user-guide/plugins/#on_template_context
+<https://www.mkdocs.org/user-guide/plugins/#on_template_context>
 
     context:
 template context variables, as a dict
@@ -427,7 +426,7 @@ of the template.
 If an empty string is returned, the template is skipped and nothing is
 is written to disc.
 
-https://www.mkdocs.org/user-guide/plugins/#on_post_template
+<https://www.mkdocs.org/user-guide/plugins/#on_post_template>
 
     output_content:
 output of rendered the template, as string
@@ -454,7 +453,7 @@ the possibly modified output of the rendered template, as string
 The `pre_page` event is called before any actions are taken on the
 subject page and can be used to alter the `Page` instance.
 
-https://www.mkdocs.org/user-guide/plugins/#on_pre_page
+<https://www.mkdocs.org/user-guide/plugins/#on_pre_page>
 
     page:
 the default Page instance
@@ -481,7 +480,7 @@ the possibly Page instance
 The `on_page`_read_source event can replace the default mechanism to
 read the contents of a page's source from the filesystem.
 
-https://www.mkdocs.org/user-guide/plugins/#on_page_read_source
+<https://www.mkdocs.org/user-guide/plugins/#on_page_read_source>
 
     page:
 the default Page instance
@@ -509,7 +508,7 @@ from its file, and can be used to alter the Markdown source text.
 The metadata has been parsed and is available as `page.meta` at this
 point.
 
-https://www.mkdocs.org/user-guide/plugins/#on_page_markdown
+<https://www.mkdocs.org/user-guide/plugins/#on_page_markdown>
 
     markdown:
 Markdown source text of the page, as a string
@@ -542,7 +541,7 @@ The `page_content` event is called after the Markdown text is rendered
 to HTML (but before being passed to a template) and can be used to
 alter the HTML body of the page.
 
-https://www.mkdocs.org/user-guide/plugins/#on_page_content
+<https://www.mkdocs.org/user-guide/plugins/#on_page_content>
 
     html:
 the HTML rendered from Markdown source, as string
@@ -575,7 +574,7 @@ The `page_context` event is called after the context for a page is
 created and can be used to alter the context for that specific page
 only.
 
-https://www.mkdocs.org/user-guide/plugins/#on_page_context
+<https://www.mkdocs.org/user-guide/plugins/#on_page_context>
 
     context:
 template context variables, as a dict
@@ -609,7 +608,7 @@ the page.
 If an empty string is returned, the page is skipped and nothing gets
 written to disk.
 
-https://www.mkdocs.org/user-guide/plugins/#on_post_page
+<https://www.mkdocs.org/user-guide/plugins/#on_post_page>
 
     output_content:
 the default output of the rendered template, as string
@@ -641,7 +640,7 @@ activated.
 For example, additional files or directories could be added to the
 list of "watched" files for auto-reloading.
 
-https://www.mkdocs.org/user-guide/plugins/#on_serve
+<https://www.mkdocs.org/user-guide/plugins/#on_serve>
 
     server:
 default livereload.Server instance

@@ -23,6 +23,7 @@ In particular, this library...
 You're welcome.
 """
 
+import importlib
 import inspect
 import os
 import re
@@ -70,7 +71,9 @@ list of the classes to include in the apidocs
         self.git_url = git_url
         self.class_list = class_list
 
+        module_obj = importlib.import_module(self.module_name)
         self.module_obj = sys.modules[self.module_name]
+
         self.md: typing.List[str] = [
             "# Reference: `{}` package".format(self.module_name),
             ]
@@ -87,26 +90,6 @@ debugging purposes.
             for n, o in inspect.getmembers(obj):
                 ic(name, n, o)
                 ic(type(o))
-
-
-    def build (
-        self
-        ) -> None:
-        """
-Build the apidocs documentation as markdown.
-        """
-        todo_list:typing.Dict[ str, typing.Any] = self.get_todo_list()
-
-        # markdown for top-level module description
-        self.md.extend(self.get_docstring(self.module_obj))
-
-        # find and format the class definitions
-        for class_name in self.class_list:
-            self.format_class(todo_list, class_name)
-
-        # format the function definitions and types
-        self.format_functions()
-        self.format_types()
 
 
     def get_todo_list (
@@ -127,10 +110,31 @@ a dictionary of class objects which need apidocs generated
         return todo_list
 
 
+    def build (
+        self
+        ) -> None:
+        """
+Build the apidocs documentation as markdown.
+        """
+        todo_list: typing.Dict[ str, typing.Any] = self.get_todo_list()
+
+        # markdown for top-level module description
+        self.md.extend(self.get_docstring(self.module_obj))
+
+        # find and format the class definitions
+        for class_name in self.class_list:
+            class_obj = todo_list[class_name]
+            self.format_class(class_name, class_obj)
+
+        # format the function definitions and types
+        self.format_functions()
+        self.format_types()
+
+
     def get_docstring (  # pylint: disable=W0102
         self,
-        obj,
-        parse=False,
+        obj: typing.Any,
+        parse: bool = False,
         arg_dict: dict = {},
         ) -> typing.List[str]:
         """
@@ -166,7 +170,7 @@ list of lines of markdown
 
     def parse_method_docstring (
         self,
-        obj,
+        obj: typing.Any,
         docstring: str,
         arg_dict: dict,
         ) -> str:
@@ -461,21 +465,20 @@ corrected line number of the method definition
 
     def format_class (
         self,
-        todo_list: typing.Dict[ str, typing.Any],
         class_name: str,
+        class_obj: typing.Any,
         ) -> None:
         """
 Format apidocs as markdown for the given class.
 
-    todo_list:
-list of classes to be documented
-
     class_name:
 name of the class to document
+
+    class_obj:
+class object
         """
         self.md.append("## [`{}` class](#{})".format(class_name, class_name))  # pylint: disable=W1308
 
-        class_obj = todo_list[class_name]
         docstring = class_obj.__doc__
         src = inspect.getsourcelines(class_obj)
 
@@ -541,24 +544,6 @@ as markdown.
                     self.md.extend(obj_md)
 
 
-    def write_markdown (
-        self,
-        path: str,
-        ) -> None:
-        """
-Output the apidocs markdown to the given path.
-
-    path:
-path for the output file
-        """
-        ic("writing", path)
-
-        with open(path, "w") as f:
-            for line in self.md:
-                f.write(line)
-                f.write("\n")
-
-
 def render_apidocs (  # pylint: disable=R0914
     local_config: dict,
     template_path: pathlib.Path,
@@ -580,7 +565,6 @@ file path for the rendered Markdown file
     returns:
 rendered Markdown
     """
-    src_path = pathlib.Path(local_config["apidocs"]["path"])
     module_name = local_config["apidocs"]["module"]
     git_url = local_config["apidocs"]["git"]
 
@@ -602,8 +586,11 @@ rendered Markdown
         # build the apidocs markdown
         pkg_doc.build()
 
-        print(pkg_doc.md)
-        #pkg_doc.write_markdown(ref_md_file)
+        # render the JSON into Markdown using the Jinja2 template
+        with open(markdown_path, "w") as f:
+            for line in pkg_doc.md:
+                f.write(line)
+                f.write("\n")
 
     except Exception as e:  # pylint: disable=W0703
         print(f"Error rendering apidocs: {e}")
