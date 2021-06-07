@@ -4,9 +4,11 @@
 
 from .plugin import MkRefsPlugin
 
-from .glossary import render_glossary
+from .apidocs import render_apidocs, PackageDoc
 
 from .biblio import render_biblio
+
+from .glossary import render_glossary
 
 from .util import load_kg
 

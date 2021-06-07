@@ -9,6 +9,7 @@ nav:
     - Other: other.md
     - Glossary: glossary.md
     - Bibliography: biblio.md
+    - Reference: ref.md
 
 plugins:
   - mkrefs
