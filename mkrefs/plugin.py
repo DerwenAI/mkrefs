@@ -41,7 +41,7 @@ construct portions of a knowledge graph.
         "apidocs": {
             "page": "the generated Markdown page; e.g., `ref.md`",
             "template": "a Jinja2 template; e.g., `ref.jinja`",
-            "module": "module name for the package",
+            "package": "the Python package name",
             "git": "URL to the source code in a public Git repository",
             "includes": "class and function names to include",
             },

@@ -7,9 +7,9 @@ mkrefs_config: mkrefs.yml
 nav:
     - Home: index.md
     - Other: other.md
+    - Reference: ref.md
     - Glossary: glossary.md
     - Bibliography: biblio.md
-    - Reference: ref.md
 
 plugins:
   - mkrefs

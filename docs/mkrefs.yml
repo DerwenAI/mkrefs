@@ -1,7 +1,7 @@
 apidocs:
   page: ref.md
   template: ref.jinja
-  module: mkrefs
+  package: mkrefs
   git: https://github.com/DerwenAI/mkrefs/blob/main
   includes: MkRefsPlugin, PackageDoc
 

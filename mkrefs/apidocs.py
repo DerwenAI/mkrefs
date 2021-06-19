@@ -23,7 +23,6 @@ In particular, this library...
 You're welcome.
 """
 
-import importlib
 import inspect
 import os
 import re
@@ -33,6 +32,8 @@ import typing
 
 from icecream import ic  # type: ignore # pylint: disable=E0401
 import pathlib
+
+from .util import render_reference
 
 
 class PackageDoc:
@@ -51,15 +52,15 @@ See also:
 
     def __init__ (
         self,
-        module_name: str,
+        package_name: str,
         git_url: str,
         class_list: typing.List[str],
         ) -> None:
         """
 Constructor, to configure a `PackageDoc` object.
 
-    module_name:
-name of the Python module
+    package_name:
+name of the Python package
 
     git_url:
 URL for the Git source repository
@@ -67,26 +68,37 @@ URL for the Git source repository
     class_list:
 list of the classes to include in the apidocs
         """
-        self.module_name = module_name
+        self.package_name = package_name
         self.git_url = git_url
         self.class_list = class_list
 
-        module_obj = importlib.import_module(self.module_name)
-        self.module_obj = sys.modules[self.module_name]
+        self.package_obj = sys.modules[self.package_name]
+
+        # prepare a file path prefix (to remove later, per file)
+        pkg_path = os.path.dirname(inspect.getfile(self.package_obj))
+        self.file_prefix = "/".join(pkg_path.split("/")[0:-1])
 
         self.md: typing.List[str] = [
-            "# Reference: `{}` package".format(self.module_name),
+            "# Reference: `{}` package".format(self.package_name),
             ]
+
+        self.meta = {
+            "package": self.package_name,
+            "git_url": self.git_url,
+            "class": {},
+            "function": {},
+            "type": {},
+        }
 
 
     def show_all_elements (
         self
         ) -> None:
         """
-Show all possible elements from `inspect` for the given module, for
+Show all possible elements from `inspect` for the given package, for
 debugging purposes.
         """
-        for name, obj in inspect.getmembers(self.module_obj):
+        for name, obj in inspect.getmembers(self.package_obj):
             for n, o in inspect.getmembers(obj):
                 ic(name, n, o)
                 ic(type(o))
@@ -96,14 +108,14 @@ debugging purposes.
         self
         ) -> typing.Dict[ str, typing.Any]:
         """
-Walk the module tree to find class definitions to document.
+Walk the package tree to find class definitions to document.
 
     returns:
 a dictionary of class objects which need apidocs generated
         """
         todo_list: typing.Dict[ str, typing.Any] = {
             class_name:  class_obj
-            for class_name, class_obj in inspect.getmembers(self.module_obj, inspect.isclass)
+            for class_name, class_obj in inspect.getmembers(self.package_obj, inspect.isclass)
             if class_name in self.class_list
             }
 
@@ -118,8 +130,11 @@ Build the apidocs documentation as markdown.
         """
         todo_list: typing.Dict[ str, typing.Any] = self.get_todo_list()
 
-        # markdown for top-level module description
-        self.md.extend(self.get_docstring(self.module_obj))
+        # markdown for top-level package description
+        docstring = self.get_docstring(self.package_obj)
+        self.md.extend(docstring)
+
+        self.meta["docstring"] = "\n".join(docstring).strip()
 
         # find and format the class definitions
         for class_name in self.class_list:
@@ -230,7 +245,7 @@ parsed/fixed docstring, as markdown
         anno: str,
         ) -> typing.Optional[str]:
         """
-Substitute the quoted forward references for a given module class.
+Substitute the quoted forward references for a given package class.
 
     anno:
 raw annotated type for the forward reference
@@ -257,6 +272,7 @@ fixed forward reference, as markdown; or `None` if no annotation is supplied
         name: str,
         obj: typing.Any,
         func_kind: str,
+        func_meta: dict,
         ) -> typing.Tuple[int, typing.List[str]]:
         """
 Generate apidocs markdown for the given class method.
@@ -273,6 +289,9 @@ class method object
     func_kind:
 function kind
 
+    func_meta:
+function metadata
+
     returns:
 line number, plus apidocs for the method as a list of markdown lines
         """
@@ -283,13 +302,18 @@ line number, plus apidocs for the method as a list of markdown lines
         anchor = "#### [`{}` {}](#{})".format(name, func_kind, frag)
         local_md.append(anchor)
 
+        func_meta["ns_path"] = frag
+
         # link to source code in Git repo
         code = obj.__code__
         line_num = code.co_firstlineno
-        file = code.co_filename.replace(os.getcwd(), "")
+        file = code.co_filename.replace(self.file_prefix, "")
 
         src_url = "[*\[source\]*]({}{}#L{})\n".format(self.git_url, file, line_num)  # pylint: disable=W1401
         local_md.append(src_url)
+
+        func_meta["file"] = file
+        func_meta["line_num"] = line_num
 
         # format the callable signature
         sig = inspect.signature(obj)
@@ -299,6 +323,8 @@ line number, plus apidocs for the method as a list of markdown lines
         local_md.append("```python")
         local_md.append("{}({})".format(name, arg_list_str))
         local_md.append("```")
+
+        func_meta["arg_list_str"] = arg_list_str
 
         # include the docstring, with return annotation
         arg_dict: dict = {
@@ -313,8 +339,12 @@ line number, plus apidocs for the method as a list of markdown lines
         if ret:
             arg_dict["returns"] = self.extract_type_annotation(ret)
 
-        local_md.extend(self.get_docstring(obj, parse=True, arg_dict=arg_dict))
+        arg_docstring = self.get_docstring(obj, parse=True, arg_dict=arg_dict)
+        local_md.extend(arg_docstring)
         local_md.append("")
+
+        func_meta["arg_dict"] = arg_dict
+        func_meta["arg_docstring"] = "\n".join(arg_docstring).strip()
 
         return line_num, local_md
 
@@ -395,9 +425,8 @@ corrected type annotation
         return type_name
 
 
-    @classmethod
     def document_type (
-        cls,
+        self,
         path_list: list,
         name: str,
         obj: typing.Any,
@@ -419,16 +448,23 @@ apidocs for the type, as a list of lines of markdown
         """
         local_md: typing.List[str] = []
 
+        type_meta = {}
+        self.meta["type"][name] = type_meta
+
         # format a header + anchor
         frag = ".".join(path_list + [ name ])
         anchor = "#### [`{}` {}](#{})".format(name, "type", frag)
         local_md.append(anchor)
+
+        type_meta["ns_path"] = frag
 
         # show type definition
         local_md.append("```python")
         local_md.append("{} = {}".format(name, obj))
         local_md.append("```")
         local_md.append("")
+
+        type_meta["obj"] = repr(obj)
 
         return local_md
 
@@ -482,6 +518,13 @@ class object
         docstring = class_obj.__doc__
         src = inspect.getsourcelines(class_obj)
 
+        class_meta = {
+            "docstring": docstring,
+            "method": {},
+            }
+
+        self.meta["class"][class_name] = class_meta
+
         if docstring:
             # add the raw docstring for a class
             self.md.append(docstring)
@@ -489,7 +532,7 @@ class object
         obj_md_pos: typing.Dict[int, typing.List[str]] = {}
 
         for member_name, member_obj in inspect.getmembers(class_obj):
-            path_list = [self.module_name, class_name]
+            path_list = [self.package_name, class_name]
 
             if member_name.startswith("__") or not member_name.startswith("_"):
                 if member_name not in class_obj.__dict__:
@@ -503,7 +546,10 @@ class object
                 else:
                     continue
 
-                _, obj_md = self.document_method(path_list, member_name, member_obj, func_kind)
+                func_meta = {}
+                class_meta["method"][member_name] = func_meta
+
+                _, obj_md = self.document_method(path_list, member_name, member_obj, func_kind, func_meta)
                 line_num = self.find_line_num(src, member_name)
                 obj_md_pos[line_num] = obj_md
 
@@ -515,15 +561,18 @@ class object
         self
         ) -> None:
         """
-Walk the module tree, and for each function definition format its
+Walk the package tree, and for each function definition format its
 apidocs as markdown.
         """
         self.md.append("---")
-        self.md.append("## [module functions](#{})".format(self.module_name))
+        self.md.append("## [package functions](#{})".format(self.package_name))
 
-        for func_name, func_obj in inspect.getmembers(self.module_obj, inspect.isfunction):
+        for func_name, func_obj in inspect.getmembers(self.package_obj, inspect.isfunction):
             if not func_name.startswith("_"):
-                _, obj_md = self.document_method([self.module_name], func_name, func_obj, "function")
+                func_meta = {}
+                self.meta["function"][func_name] = func_meta
+
+                _, obj_md = self.document_method([self.package_name], func_name, func_obj, "function", func_meta)
                 self.md.extend(obj_md)
 
 
@@ -531,16 +580,16 @@ apidocs as markdown.
         self
         ) -> None:
         """
-Walk the module tree, and for each type definition format its apidocs
+Walk the package tree, and for each type definition format its apidocs
 as markdown.
         """
         self.md.append("---")
-        self.md.append("## [module types](#{})".format(self.module_name))
+        self.md.append("## [package types](#{})".format(self.package_name))
 
-        for name, obj in inspect.getmembers(self.module_obj):
+        for name, obj in inspect.getmembers(self.package_obj):
             if obj.__class__.__module__ == "typing":
                 if not str(obj).startswith("~"):
-                    obj_md = self.document_type([self.module_name], name, obj)
+                    obj_md = self.document_type([self.package_name], name, obj)
                     self.md.extend(obj_md)
 
 
@@ -565,7 +614,9 @@ file path for the rendered Markdown file
     returns:
 rendered Markdown
     """
-    module_name = local_config["apidocs"]["module"]
+    groups: typing.Dict[str, list] = {}
+
+    package_name = local_config["apidocs"]["package"]
     git_url = local_config["apidocs"]["git"]
 
     includes = [
@@ -574,7 +625,7 @@ rendered Markdown
     ]
 
     pkg_doc = PackageDoc(
-        module_name,
+        package_name,
         git_url,
         includes,
         )
@@ -587,14 +638,17 @@ rendered Markdown
         pkg_doc.build()
 
         # render the JSON into Markdown using the Jinja2 template
-        with open(markdown_path, "w") as f:
-            for line in pkg_doc.md:
-                f.write(line)
-                f.write("\n")
+        groups = {
+            "package": [ pkg_doc.meta ],
+        }
 
+        render_reference(
+            template_path,
+            markdown_path,
+            groups,
+        )
     except Exception as e:  # pylint: disable=W0703
         print(f"Error rendering apidocs: {e}")
         traceback.print_exc()
 
-    groups: typing.Dict[str, list] = {}
     return groups

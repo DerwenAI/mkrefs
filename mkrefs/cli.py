@@ -7,12 +7,31 @@ import pathlib
 import typer
 import yaml
 
-from .glossary import render_glossary
+from .apidocs import render_apidocs
 from .biblio import render_biblio
+from .glossary import render_glossary
 from .util import load_kg
 
 
 APP = typer.Typer()
+
+
+@APP.command()
+def apidocs (
+    config_file: str,
+    ) -> None:
+    """
+Command to generate a package reference apidocs.
+    """
+    config_path = pathlib.Path(config_file)
+    docs_dir = config_path.parent
+    local_config = yaml.safe_load(config_path.read_text())
+
+    template_path = docs_dir / local_config["apidocs"]["template"]
+    markdown_path = docs_dir / local_config["apidocs"]["page"]
+
+    groups = render_apidocs(local_config, template_path, markdown_path)
+    pprint(groups)
 
 
 @APP.command()
