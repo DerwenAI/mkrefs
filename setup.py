@@ -7,6 +7,7 @@ import typing
 
 
 KEYWORDS = [
+    "apidocs",
     "bibliography",
     "documentation",
     "glossary",
@@ -33,7 +34,7 @@ if __name__ == "__main__":
         name = "mkrefs",
         version = mkrefs_version.__version__,
 
-        description = "MkDocs plugin to generate reference Markdown pages",
+        description = "MkDocs plugin to generate semantic reference Markdown pages",
         long_description = pathlib.Path("README.md").read_text(),
         long_description_content_type = "text/markdown",
 

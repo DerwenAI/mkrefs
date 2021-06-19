@@ -23,7 +23,6 @@ In particular, this library...
 You're welcome.
 """
 
-import importlib
 import inspect
 import os
 import re
@@ -33,6 +32,8 @@ import typing
 
 from icecream import ic  # type: ignore # pylint: disable=E0401
 import pathlib
+
+from .util import render_reference
 
 
 class PackageDoc:
@@ -71,8 +72,11 @@ list of the classes to include in the apidocs
         self.git_url = git_url
         self.class_list = class_list
 
-        package_obj = importlib.import_module(self.package_name)
         self.package_obj = sys.modules[self.package_name]
+
+        # prepare a file path prefix (to remove later, per file)
+        pkg_path = os.path.dirname(inspect.getfile(self.package_obj))
+        self.file_prefix = "/".join(pkg_path.split("/")[0:-1])
 
         self.md: typing.List[str] = [
             "# Reference: `{}` package".format(self.package_name),
@@ -130,7 +134,7 @@ Build the apidocs documentation as markdown.
         docstring = self.get_docstring(self.package_obj)
         self.md.extend(docstring)
 
-        self.meta["docstring"] = docstring
+        self.meta["docstring"] = "\n".join(docstring).strip()
 
         # find and format the class definitions
         for class_name in self.class_list:
@@ -303,11 +307,12 @@ line number, plus apidocs for the method as a list of markdown lines
         # link to source code in Git repo
         code = obj.__code__
         line_num = code.co_firstlineno
-        file = code.co_filename.replace(os.getcwd(), "")
+        file = code.co_filename.replace(self.file_prefix, "")
 
         src_url = "[*\[source\]*]({}{}#L{})\n".format(self.git_url, file, line_num)  # pylint: disable=W1401
         local_md.append(src_url)
 
+        func_meta["file"] = file
         func_meta["line_num"] = line_num
 
         # format the callable signature
@@ -339,7 +344,7 @@ line number, plus apidocs for the method as a list of markdown lines
         local_md.append("")
 
         func_meta["arg_dict"] = arg_dict
-        func_meta["arg_docstring"] = arg_docstring
+        func_meta["arg_docstring"] = "\n".join(arg_docstring).strip()
 
         return line_num, local_md
 
@@ -420,9 +425,8 @@ corrected type annotation
         return type_name
 
 
-    @classmethod
     def document_type (
-        cls,
+        self,
         path_list: list,
         name: str,
         obj: typing.Any,
@@ -460,7 +464,7 @@ apidocs for the type, as a list of lines of markdown
         local_md.append("```")
         local_md.append("")
 
-        type_meta["obj"] = obj
+        type_meta["obj"] = repr(obj)
 
         return local_md
 
@@ -610,6 +614,8 @@ file path for the rendered Markdown file
     returns:
 rendered Markdown
     """
+    groups: typing.Dict[str, list] = {}
+
     package_name = local_config["apidocs"]["package"]
     git_url = local_config["apidocs"]["git"]
 
@@ -632,14 +638,17 @@ rendered Markdown
         pkg_doc.build()
 
         # render the JSON into Markdown using the Jinja2 template
-        with open(markdown_path, "w") as f:
-            for line in pkg_doc.md:
-                f.write(line)
-                f.write("\n")
+        groups = {
+            "package": [ pkg_doc.meta ],
+        }
 
+        render_reference(
+            template_path,
+            markdown_path,
+            groups,
+        )
     except Exception as e:  # pylint: disable=W0703
         print(f"Error rendering apidocs: {e}")
         traceback.print_exc()
 
-    groups: typing.Dict[str, list] = {}
     return groups

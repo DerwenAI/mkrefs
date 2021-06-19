@@ -124,7 +124,7 @@ derw:Topic a skos:Concept ,
   a bibo:Proceedings ;
   bibo:shortTitle "EMNLP"@en ;
   dct:title "Proceedings of the 2004 Conference on Empirical Methods in Natural Language Processing"@en ;
-  dct:date "2004" ;
+  dct:Date "2004" ;
   dct:identifier <https://www.aclweb.org/anthology/venues/emnlp/> ;
   dct:publisher <https://www.aclweb.org/portal/>
 .
@@ -151,7 +151,7 @@ derw:Topic a skos:Concept ,
   dct:title "PositionRank: An Unsupervised Approach to Keyphrase Extraction from Scholarly Documents"@en ;
   dct:isPartOf <urn:issn:0891-2017> ;
   dct:language "en" ;
-  dct:date "2017-07-30" ;
+  dct:Date "2017-07-30" ;
   bibo:pageStart "1105" ;
   bibo:pageEnd "1115" ;
   bibo:authorList (
@@ -168,7 +168,7 @@ derw:Topic a skos:Concept ,
   derw:openAccess <https://www.cs.purdue.edu/homes/dgleich/publications/Gleich%202015%20-%20prbeyond.pdf> ;
   dct:title "PageRank Beyond the Web"@en ;
   dct:language "en" ;
-  dct:date "2015-08-06" ;
+  dct:Date "2015-08-06" ;
   dct:isPartOf <urn:issn:0036-1445> ;
   bibo:volume "57" ;
   bibo:issue "3" ;
@@ -187,7 +187,7 @@ derw:Topic a skos:Concept ,
   derw:openAccess <https://www.aclweb.org/anthology/2020.coling-main.144.pdf> ;
   dct:title "Biased TextRank: Unsupervised Graph-Based Content Extraction"@en ;
   dct:language "en" ;
-  dct:date "2020-12-08" ;
+  dct:Date "2020-12-08" ;
   dct:isPartOf <urn:issn:1525-2477> ;
   bibo:volume "28" ;
   bibo:pageStart "1642" ;
@@ -207,7 +207,7 @@ derw:Topic a skos:Concept ,
   derw:openAccess <http://ilpubs.stanford.edu:8090/422/1/1999-66.pdf> ;
   dct:title "The PageRank Citation Ranking: Bringing Order to the Web"@en ;
   dct:language "en" ;
-  dct:date "1999-11-11" ;
+  dct:Date "1999-11-11" ;
   dct:isPartOf <http://ilpubs.stanford.edu:8090/> ;
   bibo:authorList (
     <https://derwen.ai/s/mk6xj6cfrrxg>
@@ -224,7 +224,7 @@ derw:Topic a skos:Concept ,
   derw:openAccess <https://web.eecs.umich.edu/~mihalcea/papers/mihalcea.emnlp04.pdf> ;
   dct:title "TextRank: Bringing Order into Text"@en ;
   dct:language "en" ;
-  dct:date "2004-07-25" ;
+  dct:Date "2004-07-25" ;
   dct:isPartOf <https://www.aclweb.org/anthology/venues/emnlp/> ;
   bibo:pageStart "404" ;
   bibo:pageEnd "411" ;
@@ -240,7 +240,7 @@ derw:Topic a skos:Concept ,
   derw:citeKey "williams2016"@en ;
   dct:title "Summarizing documents"@en ;
   dct:language "en" ;
-  dct:date "2016-09-25" ;
+  dct:Date "2016-09-25" ;
   bibo:presentedAt <https://2016.pygotham.org/> ;
   bibo:authorList (
     <https://derwen.ai/s/2t2mbms2x4p3>

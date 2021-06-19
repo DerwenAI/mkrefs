@@ -17,9 +17,9 @@ including:
   * *depend* – semantic dependency graph for Python libraries, generated as RDF from `setup.py`
   * *index* – semantic search index, generated as RDF from MkDocs content
 
-Only the *biblio* and *glossary* components has been added to
-**MkRefs** so far, although these other mentioned components exist in
-separate projects and are being integrated.
+Only the *apidocs*, *biblio*, and *glossary* components have been
+added to **MkRefs** so far, although the other mentioned components
+exist in separate projects and are being integrated.
 
 
 ## Why does this matter?
@@ -171,6 +171,7 @@ Python scripts, see the code for usage of the `MkRefsPlugin` class,
 plus some utility functions:
 
   * `load_kg()`
+  * `render_apidocs()`
   * `render_biblio()`
   * `render_glossary()`
 
@@ -178,6 +179,7 @@ There are also command line *entry points* provided, which can be
 helpful during dev/test cycles on the semantic representation of your
 content:
 ```
+mkrefs apidocs docs/mkrefs.yml
 mkrefs biblio docs/mkrefs.yml
 mkrefs glossary docs/mkrefs.yml
 ```
