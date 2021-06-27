@@ -33,7 +33,7 @@ import typing
 from icecream import ic  # type: ignore # pylint: disable=E0401
 import kglab
 import pathlib
-import rdflib
+import rdflib  # type: ignore  # pylint: disable=E0401
 
 from .util import render_reference
 
@@ -84,7 +84,7 @@ list of the classes to include in the apidocs
             "# Reference: `{}` package".format(self.package_name),
             ]
 
-        self.meta = {
+        self.meta: dict = {
             "package": self.package_name,
             "git_url": self.git_url,
             "class": {},
@@ -223,7 +223,7 @@ parsed/fixed docstring, as markdown
                         line_num = code.co_firstlineno
                         module = code.co_filename
                         raise Exception(f"argument `{name}` described at line {line_num} in {module} is not in the parameter list")
-                        
+
                     anno = self.fix_fwd_refs(arg_dict[name])
                     descrip = m_name.group(2).strip()
 
@@ -450,7 +450,7 @@ apidocs for the type, as a list of lines of markdown
         """
         local_md: typing.List[str] = []
 
-        type_meta = {}
+        type_meta: typing.Dict[str, str] = {}
         self.meta["type"][name] = type_meta
 
         # format a header + anchor
@@ -548,7 +548,7 @@ class object
                 else:
                     continue
 
-                func_meta = {}
+                func_meta: typing.Dict[str, str] = {}
                 class_meta["method"][member_name] = func_meta
 
                 _, obj_md = self.document_method(path_list, member_name, member_obj, func_kind, func_meta)
@@ -571,7 +571,7 @@ apidocs as markdown.
 
         for func_name, func_obj in inspect.getmembers(self.package_obj, inspect.isfunction):
             if not func_name.startswith("_"):
-                func_meta = {}
+                func_meta: typing.Dict[str, str] = {}
                 self.meta["function"][func_name] = func_meta
 
                 _, obj_md = self.document_method([self.package_name], func_name, func_obj, "function", func_meta)
@@ -595,8 +595,9 @@ as markdown.
                     self.md.extend(obj_md)
 
 
+    @classmethod
     def entity_template (
-        self,
+        cls,
         kg: kglab.KnowledgeGraph,
         node: kglab.RDF_Node,
         kind: kglab.RDF_Node,
@@ -606,6 +607,24 @@ as markdown.
         ) -> None:
         """
 Represent the given entity in RDF.
+
+    kg:
+graph object
+
+    node:
+entity node being represented
+
+    kind:
+RDF type of the entity
+
+    name:
+name of the entity
+
+    descrip:
+Markdown description from docstring
+
+    parent:
+parent node of the entity
         """
         kg.add(node, kg.get_ns("rdf").type, kind)
         kg.add(node, kg.get_ns("rdfs").label, rdflib.Literal(name, lang=kg.language))
@@ -615,29 +634,39 @@ Represent the given entity in RDF.
             kg.add(node, kg.get_ns("dct").isPartOf, parent)
 
 
+    @classmethod
     def function_template (
-        self,
+        cls,
         kg: kglab.KnowledgeGraph,
         node: kglab.RDF_Node,
-        obj: dict,
+        meta: dict,
         ) -> None:
         """
 Represent additional metadata for a function in RDF.
+
+    kg:
+graph object
+
+    node:
+entity node being represented
+
+    meta:
+additional metadata
         """
-        kg.add(node, kg.get_ns("derw").apidocs_ns_path, rdflib.Literal(obj["ns_path"], lang=kg.language))
-        kg.add(node, kg.get_ns("derw").apidocs_args, rdflib.Literal(obj["arg_list_str"], lang=kg.language))
-        kg.add(node, kg.get_ns("derw").apidocs_file, rdflib.Literal(obj["file"], lang=kg.language))
-        kg.add(node, kg.get_ns("derw").apidocs_line, rdflib.Literal(obj["line_num"], datatype=rdflib.XSD.integer))
+        kg.add(node, kg.get_ns("derw").apidocs_ns_path, rdflib.Literal(meta["ns_path"], lang=kg.language))
+        kg.add(node, kg.get_ns("derw").apidocs_args, rdflib.Literal(meta["arg_list_str"], lang=kg.language))
+        kg.add(node, kg.get_ns("derw").apidocs_file, rdflib.Literal(meta["file"], lang=kg.language))
+        kg.add(node, kg.get_ns("derw").apidocs_line, rdflib.Literal(meta["line_num"], datatype=rdflib.XSD.integer))
 
-        if "yields" in obj["arg_dict"] and obj["arg_dict"]["yields"]:
-            kg.add(node, kg.get_ns("derw").apidocs_yields, rdflib.Literal(obj["arg_dict"]["yields"], lang=kg.language))
+        if "yields" in meta["arg_dict"] and meta["arg_dict"]["yields"]:
+            kg.add(node, kg.get_ns("derw").apidocs_yields, rdflib.Literal(meta["arg_dict"]["yields"], lang=kg.language))
 
-            if "returns" in obj["arg_dict"] and obj["arg_dict"]["returns"]:
-                kg.add(node, kg.get_ns("derw").apidocs_returns, rdflib.Literal(obj["arg_dict"]["returns"], lang=kg.language))
+            if "returns" in meta["arg_dict"] and meta["arg_dict"]["returns"]:
+                kg.add(node, kg.get_ns("derw").apidocs_returns, rdflib.Literal(meta["arg_dict"]["returns"], lang=kg.language))
 
-        for param_name, param_type in obj["arg_dict"].items():
+        for param_name, param_type in meta["arg_dict"].items():
             if param_name not in ["yields", "returns"]:
-                param_node = rdflib.URIRef("derw:apidocs:param:" + obj["ns_path"] + "." + param_name)
+                param_node = rdflib.URIRef("derw:apidocs:param:" + meta["ns_path"] + "." + param_name)
                 kg.add(node, kg.get_ns("derw").apidocs_paramlist, param_node)
 
                 kg.add(param_node, kg.get_ns("rdfs").label, rdflib.Literal(param_name, lang=kg.language))

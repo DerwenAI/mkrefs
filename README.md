@@ -78,7 +78,7 @@ In addition, the following configuration parameter is expected:
 
 ## API Docs
 
-A `apidocs` parameter within the configuration file expects four
+An `apidocs` parameter within the configuration file expects four
 required sub-parameters:
 
  * `page` – name of the generated Markdown page, e.g., `ref.md`
@@ -186,6 +186,19 @@ When available,
 URLs should be listed as well.
 
 
+### What is going on here?
+
+For example with the bibliography use case, when the plugin runs...
+
+1. It parses its configuration file to identify the target Markdown page to generate and the Jinja2 template
+2. The plugin also loads an RDF graph from the indicated TTL file
+3. Three SPARQL queries are run to identify the unique entities to extract from the graph
+4. The graph is serialized as [JSON-LD](https://derwen.ai/docs/kgl/ref/#kglab.KnowledgeGraph.save_jsonld)
+5. The `author`, `publisher`, and bibliography `entry` entities are used to *denormalize* the graph into a JSON data object
+6. The JSON is rendered using the Jinja2 template to generate the Markdown
+7. The Markdown page is parsed and rendered by MkDocs as HTML, etc.
+
+
 ## Glossary
 
 A `glossary` parameter within the configuration file expects four
@@ -255,19 +268,6 @@ mkrefs apidocs docs/mkrefs.yml
 mkrefs biblio docs/mkrefs.yml
 mkrefs glossary docs/mkrefs.yml
 ```
-
-
-## What is going on here?
-
-For example with the bibliography use case, when the plugin runs...
-
-1. It parses its configuration file to identify the target Markdown page to generate and the Jinja2 template
-2. The plugin also loads an RDF graph from the indicated TTL file
-3. Three SPARQL queries are run to identify the unique entities to extract from the graph
-4. The graph is serialized as [JSON-LD](https://derwen.ai/docs/kgl/ref/#kglab.KnowledgeGraph.save_jsonld)
-5. The `author`, `publisher`, and bibliography `entry` entities are used to *denormalize* the graph into a JSON data object
-6. The JSON is rendered using the Jinja2 template to generate the Markdown
-7. The Markdown page is parsed and rendered by MkDocs as HTML, etc.
 
 
 ## Caveats
