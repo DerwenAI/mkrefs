@@ -4,12 +4,48 @@ site_url: https://github.com/DerwenAI/mkrefs
 
 mkrefs_config: mkrefs.yml
 
+repo_url: https://github.com/DerwenAI/mkrefs
+repo_name: DerwenAI/mkrefs
+
+copyright: Source code and documentation are <strong><a href="https://github.com/DerwenAI/mkrefs/blob/main/LICENSE" target="_blank">licensed</a></strong> under an MIT License; Copyright &copy; 2021 <strong><a href="https://derwen.ai/" target="_blank">Derwen, Inc.</a></strong>
+
 nav:
     - Home: index.md
-    - Other: other.md
     - Reference: ref.md
     - Glossary: glossary.md
     - Bibliography: biblio.md
 
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/github
+  favicon: assets/favicon.png
+  logo: assets/logo.png
+  features:
+    - navigation.instant
+
 plugins:
+  - git-revision-date
   - mkrefs
+
+extra_css:
+  - stylesheets/extra.css
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css
+
+extra_javascript:
+  - javascripts/config.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js
+
+use_directory_urls: true
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - footnotes
+  - toc:
+      toc_depth: 3
+      permalink: true
+  - pymdownx.highlight:
+      use_pygments: false

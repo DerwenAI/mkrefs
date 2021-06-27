@@ -1,5 +1,12 @@
 # `MkRefs` changelog
 
+## 0.3.0
+
+2021-07-??
+
+  * migrate to `mkdocs-material` for development
+
+
 ## 0.2.0
 
 2021-06-27
