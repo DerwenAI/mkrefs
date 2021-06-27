@@ -1,0 +1,13 @@
+bandit
+codespell
+coverage
+flask
+mkdocs-git-revision-date-plugin
+mkdocs-material
+mypy
+pre-commit
+pylint >= 2.7.0
+pytest
+pymdown-extensions
+twine
+wheel

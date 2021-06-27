@@ -4,7 +4,7 @@
 
 2021-07-??
 
-  * fixed Pygments usage
+  * migrate to `mkdocs-material` for development
 
 
 ## 0.2.0

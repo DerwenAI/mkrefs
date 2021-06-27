@@ -46,6 +46,12 @@ See:
 [changelog.txt](https://github.com/DerwenAI/mkrefs/blob/main/changelog.txt)
 </details>
 
+<img
+ alt="MkRefs, for semantic references"
+ src="https://raw.githubusercontent.com/DerwenAI/mkrefs/main/docs/assets/logo.png"
+ width="267"
+/>
+
 
 ## Why does this matter?
 
@@ -317,6 +323,10 @@ All materials herein are Copyright &copy; 2021 Derwen, Inc.
 
 
 ## Acknowledgements
+
+Many thanks to our open source [sponsors](https://github.com/sponsors/ceteri);
+and to our contributors:
+[@ceteri](https://github.com/ceteri)
 
 This plugin code is based on the marvelous examples in
 <https://github.com/byrnereese/mkdocs-plugin-template>
