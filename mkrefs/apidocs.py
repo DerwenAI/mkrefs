@@ -31,7 +31,9 @@ import traceback
 import typing
 
 from icecream import ic  # type: ignore # pylint: disable=E0401
+import kglab
 import pathlib
+import rdflib
 
 from .util import render_reference
 
@@ -591,6 +593,139 @@ as markdown.
                 if not str(obj).startswith("~"):
                     obj_md = self.document_type([self.package_name], name, obj)
                     self.md.extend(obj_md)
+
+
+    def entity_template (
+        self,
+        kg: kglab.KnowledgeGraph,
+        node: kglab.RDF_Node,
+        kind: kglab.RDF_Node,
+        name: str,
+        descrip: str,
+        parent: typing.Optional[kglab.RDF_Node],
+        ) -> None:
+        """
+Represent the given entity in RDF.
+        """
+        kg.add(node, kg.get_ns("rdf").type, kind)
+        kg.add(node, kg.get_ns("rdfs").label, rdflib.Literal(name, lang=kg.language))
+        kg.add(node, kg.get_ns("dct").description, rdflib.Literal(descrip, lang=kg.language))
+
+        if parent:
+            kg.add(node, kg.get_ns("dct").isPartOf, parent)
+
+
+    def function_template (
+        self,
+        kg: kglab.KnowledgeGraph,
+        node: kglab.RDF_Node,
+        obj: dict,
+        ) -> None:
+        """
+Represent additional metadata for a function in RDF.
+        """
+        kg.add(node, kg.get_ns("derw").apidocs_ns_path, rdflib.Literal(obj["ns_path"], lang=kg.language))
+        kg.add(node, kg.get_ns("derw").apidocs_args, rdflib.Literal(obj["arg_list_str"], lang=kg.language))
+        kg.add(node, kg.get_ns("derw").apidocs_file, rdflib.Literal(obj["file"], lang=kg.language))
+        kg.add(node, kg.get_ns("derw").apidocs_line, rdflib.Literal(obj["line_num"], datatype=rdflib.XSD.integer))
+
+        if "yields" in obj["arg_dict"] and obj["arg_dict"]["yields"]:
+            kg.add(node, kg.get_ns("derw").apidocs_yields, rdflib.Literal(obj["arg_dict"]["yields"], lang=kg.language))
+
+            if "returns" in obj["arg_dict"] and obj["arg_dict"]["returns"]:
+                kg.add(node, kg.get_ns("derw").apidocs_returns, rdflib.Literal(obj["arg_dict"]["returns"], lang=kg.language))
+
+        for param_name, param_type in obj["arg_dict"].items():
+            if param_name not in ["yields", "returns"]:
+                param_node = rdflib.URIRef("derw:apidocs:param:" + obj["ns_path"] + "." + param_name)
+                kg.add(node, kg.get_ns("derw").apidocs_paramlist, param_node)
+
+                kg.add(param_node, kg.get_ns("rdfs").label, rdflib.Literal(param_name, lang=kg.language))
+                kg.add(param_node, kg.get_ns("derw").apidocs_type, rdflib.Literal(param_type, lang=kg.language))
+                kg.add(param_node, kg.get_ns("dct").isPartOf, node)
+
+
+    def get_rdf (
+        self
+        ) -> kglab.KnowledgeGraph:
+        """
+Generate an RDF graph from the apidocs descriptions.
+
+    returns:
+generated knowledge graph
+        """
+        kg = kglab.KnowledgeGraph(
+            namespaces={
+                "dct": "http://purl.org/dc/terms/",
+                "derw": "https://derwen.ai/ns/v1#",
+                "owl": "http://www.w3.org/2002/07/owl#",
+                "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+                "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+                "skos": "http://www.w3.org/2004/02/skos/core#",
+                "xsd":  "http://www.w3.org/2001/XMLSchema#",
+            })
+
+        package_node = rdflib.URIRef(f"derw:apidocs:package:{self.package_name}")
+        kg.add(package_node, kg.get_ns("dct").identifier, rdflib.URIRef(self.git_url))
+
+        self.entity_template(
+            kg,
+            package_node,
+            kg.get_ns("derw").PythonPackage,
+            self.package_name,
+            self.meta["docstring"],
+            None,
+        )
+
+        for class_name, class_obj in self.meta["class"].items():
+            class_node = rdflib.URIRef(f"derw:apidocs:class:{self.package_name}.{class_name}")
+
+            self.entity_template(
+                kg,
+                class_node,
+                kg.get_ns("derw").PythonClass,
+                class_name,
+                class_obj["docstring"],
+                package_node,
+            )
+
+            for method_name, method_obj in class_obj["method"].items():
+                method_node = rdflib.URIRef(f"derw:apidocs:method:{self.package_name}.{class_name}.{method_name}")
+
+                self.entity_template(
+                    kg,
+                    method_node,
+                    kg.get_ns("derw").PythonMethod,
+                    method_name,
+                    method_obj["arg_docstring"],
+                    class_node,
+                )
+
+                self.function_template(
+                    kg,
+                    method_node,
+                    method_obj,
+                )
+
+        for function_name, function_obj in self.meta["function"].items():
+            function_node = rdflib.URIRef(f"derw:apidocs:function:{self.package_name}.{function_name}")
+
+            self.entity_template(
+                kg,
+                function_node,
+                kg.get_ns("derw").PythonMethod,
+                function_name,
+                function_obj["arg_docstring"],
+                package_node,
+            )
+
+            self.function_template(
+                kg,
+                function_node,
+                function_obj,
+            )
+
+        return kg
 
 
 def render_apidocs (  # pylint: disable=R0914
