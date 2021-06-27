@@ -22,6 +22,31 @@ added to **MkRefs** so far, although the other mentioned components
 exist in separate projects and are being integrated.
 
 
+<details>
+  <summary>Contributing Code</summary>
+
+We welcome people getting involved as contributors to this open source
+project!
+
+For detailed instructions please see:
+[CONTRIBUTING.md](https://github.com/DerwenAI/mkrefs/blob/main/CONTRIBUTING.md)
+</details>
+
+<details>
+  <summary>Semantic Versioning</summary>
+
+Before <strong>MkRefs</strong> reaches release <code>v1.0.0</code> the 
+types and classes may undergo substantial changes and the project is 
+not guaranteed to have a consistent API.
+
+Even so, we'll try to minimize breaking changes.
+We'll also be sure to provide careful notes.
+
+See:
+[changelog.txt](https://github.com/DerwenAI/mkrefs/blob/main/changelog.txt)
+</details>
+
+
 ## Why does this matter?
 
 A key takeaway is that many software engineering aspects of open
@@ -48,6 +73,53 @@ plugins:
 In addition, the following configuration parameter is expected:
 
   * `mkrefs_config` - YAML configuration file for **MkRefs**; e.g., `mkrefs.yml`
+
+---
+
+## API Docs
+
+A `apidocs` parameter within the configuration file expects four
+required sub-parameters:
+
+ * `page` – name of the generated Markdown page, e.g., `ref.md`
+ * `template` – a [Jinja2 template](https://jinja.palletsprojects.com/en/3.0.x/) to generate Markdown, e.g., `ref.jinja`
+ * `package` – name of the package being documented
+ * `git` – base URL for source modules in Git, e.g., `https://github.com/DerwenAI/mkrefs/blob/main`
+
+There is an optional `includes` parameter, as a list of class
+definitions to include.
+If this is used, then all other classes get ignored.
+
+See the source code in this repo for examples of how to format
+Markdown within *docstrings*.
+Specifically see the parameter documentation per method or function,
+which differs slightly from pre-exisiting frameworks.
+
+Note that the name of the generated Markdown page for the
+apidocs must appear in the `nav` section of your `mkdocs.yml`
+configuration file.
+See the structure used in this repo for an example.
+
+### Best Practices: RDF representation
+
+You can use this library outside of MkDocs, i.e., calling it
+programmatically, to generate an RDF graph to represent your package
+API reference:
+
+```
+package_name = "mkrefs"
+git_url = "https://github.com/DerwenAI/mkrefs/blob/main"
+includes = [ "MkRefsPlugin", "PackageDoc" ]
+
+pkg_doc = PackageDoc(package_name, git_url, includes)
+pkg_doc.build()
+
+kg = pkg_doc.get_rdf()
+```
+
+The `PackageDoc.get_rdf()` method returns an RDF graph as an instance
+of an `kglab.KnowledgeGraph` object.
+For more details, see <https://derwen.ai/docs/kgl/>
 
 
 ## Bibliography
@@ -80,7 +152,7 @@ The `queries` parameter has three required SPARQL queries:
   * `entry_author` – a mapping to identify author links for each bibliography entry
   * `entry_publisher` - the publisher link for each bibliography entry (if any)
 
-Note that the named of the generated Markdown page for the
+Note that the name of the generated Markdown page for the
 bibliography must appear in the `nav` section of your `mkdocs.yml`
 configuration file.
 See the structure used in this repo for an example.
@@ -149,7 +221,7 @@ The `queries` parameter has three required SPARQL queries:
   * `entry_cite` – citations to the local bibliography citekeys (if any)
   * `entry_hyp` – a mapping of [*hypernyms*](https://en.wikipedia.org/wiki/Hyponymy_and_hypernymy) (if any)
 
-Note that the named of the generated Markdown page for the glossary
+Note that the name of the generated Markdown page for the glossary
 must appear in the `nav` section of your `mkdocs.yml` configuration
 file.
 See the structure used in this repo for an example.
@@ -187,7 +259,7 @@ mkrefs glossary docs/mkrefs.yml
 
 ## What is going on here?
 
-When the plugin runs,
+For example with the bibliography use case, when the plugin runs...
 
 1. It parses its configuration file to identify the target Markdown page to generate and the Jinja2 template
 2. The plugin also loads an RDF graph from the indicated TTL file
@@ -221,7 +293,8 @@ and
 ```
 INFO    -  The following pages exist in the docs directory, but are not included in the "nav" configuration:
   - biblio.md
-  - glossary.md 
+  - glossary.md
+  - ref.md
 ```
 
 For now, you can simply ignore both of these warnings.
