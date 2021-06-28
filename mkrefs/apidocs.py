@@ -666,9 +666,8 @@ additional metadata
 
         for param_name, param_type in meta["arg_dict"].items():
             if param_name not in ["yields", "returns"]:
-                param_node = rdflib.URIRef("derw:apidocs:param:" + meta["ns_path"] + "." + param_name)
-                kg.add(node, kg.get_ns("derw").apidocs_paramlist, param_node)
-
+                param_node = rdflib.URIRef("derw:apidocs:param:" + meta["ns_path"] + "." + re.sub("[^0-9a-zA-Z_]", "", param_name))
+                kg.add(param_node, kg.get_ns("rdf").type, kg.get_ns("derw").PythonParam)
                 kg.add(param_node, kg.get_ns("rdfs").label, rdflib.Literal(param_name, lang=kg.language))
                 kg.add(param_node, kg.get_ns("derw").apidocs_type, rdflib.Literal(param_type, lang=kg.language))
                 kg.add(param_node, kg.get_ns("dct").isPartOf, node)

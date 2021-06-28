@@ -4,7 +4,8 @@
 
 2021-07-??
 
-  * migrate to `mkdocs-material` for development
+  * migrated to `mkdocs-material` as part of development
+  * fixed bug in RDF for function parameters
 
 
 ## 0.2.0
