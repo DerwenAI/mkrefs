@@ -23,6 +23,7 @@ In particular, this library...
 You're welcome.
 """
 
+import importlib
 import inspect
 import os
 import re
@@ -74,7 +75,13 @@ list of the classes to include in the apidocs
         self.git_url = git_url
         self.class_list = class_list
 
-        self.package_obj = sys.modules[self.package_name]
+        # hunt for the package
+        spec = importlib.util.spec_from_file_location(self.package_name, self.package_name + "/__init__.py")
+
+        #self.package_obj = sys.modules[self.package_name]
+        self.package_obj = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(self.package_obj)  # type: ignore
+        sys.modules[spec.name] = self.package_obj
 
         # prepare a file path prefix (to remove later, per file)
         pkg_path = os.path.dirname(inspect.getfile(self.package_obj))

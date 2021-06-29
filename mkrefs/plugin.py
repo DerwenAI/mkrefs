@@ -70,6 +70,7 @@ construct portions of a knowledge graph.
         self.enabled = True
         self.local_config: dict = defaultdict()
 
+        self.apidocs_used = False
         self.apidocs_file = None
 
         self.glossary_kg = None
@@ -146,6 +147,9 @@ the possibly modified global configuration object
 
         reuse_graph_path = None
 
+        if self._valid_component_config(yaml_path, "apidocs"):
+            self.apidocs_used = True
+
         if self._valid_component_config(yaml_path, "glossary"):
             # load the KG for the glossary
             try:
@@ -196,7 +200,7 @@ the default global configuration object
     returns:
 the possibly modified global files collection
         """
-        if self.local_config["apidocs"]["page"]:
+        if self.apidocs_used and self.local_config["apidocs"]["page"]:
             self.apidocs_file = mkdocs.structure.files.File(
                 path = self.local_config["apidocs"]["page"],
                 src_dir = config["docs_dir"],
