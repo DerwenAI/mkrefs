@@ -6,7 +6,8 @@
 
   * migrated to `mkdocs-material` as part of development
   * fixed bug in RDF for function parameters
-
+  * using `imporlib` approach to find local source module
+  * fixed bug when apidocs is not configured
 
 ## 0.2.0
 
